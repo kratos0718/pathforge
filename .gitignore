@@ -1,36 +1,39 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# ── Next.js ──────────────────────────────────────────────
 /node_modules
+/.next/
+/out/
+/build
 /.pnp
 .pnp.js
 .yarn/install-state.gz
-
-# testing
 /coverage
+next-env.d.ts
+*.tsbuildinfo
 
-# next.js
-/.next/
-/out/
+# ── Environment variables (NEVER commit these) ───────────
+.env
+.env.local
+.env.*.local
+.env.production
+backend/.env
 
-# production
-/build
+# ── Python / Backend ─────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+venv/
+.venv/
+env/
+.env/
+*.egg-info/
+dist/
+.pytest_cache/
 
-# misc
+# ── Misc ─────────────────────────────────────────────────
 .DS_Store
 *.pem
-
-# debug
+.vercel
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# local env files
-.env*.local
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
