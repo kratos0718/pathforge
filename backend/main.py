@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from routers import profile, roadmap, dsa, courses, challenges, friends, rag, score, cgpa, agent, payments
 from auth import verify_token
+import os
 import uvicorn
 
 app = FastAPI(
@@ -11,12 +12,16 @@ app = FastAPI(
 )
 
 # CORS — allow Next.js frontend in dev and prod
+# FRONTEND_URL can be set to your exact Vercel URL (e.g. https://pathforge.vercel.app)
+_frontend_url = os.getenv("FRONTEND_URL", "")
+_origins = ["http://localhost:3000"]
+if _frontend_url:
+    _origins.append(_frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://*.vercel.app",
-    ],
+    allow_origins=_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

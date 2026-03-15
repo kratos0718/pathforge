@@ -148,11 +148,13 @@ export default function CoursesPage() {
   const [formPlatform, setFormPlatform] = useState<Platform>('Udemy')
   const [formSections, setFormSections] = useState<number>(10)
   const [submitting, setSubmitting] = useState(false)
+  const [addError, setAddError] = useState('')
 
   // Progress updates
   const [progressInputs, setProgressInputs] = useState<Record<string, number>>({})
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [seeding, setSeeding] = useState(false)
 
   // RAG recommender
   const [ragRole, setRagRole] = useState<Role>('SDE')
@@ -213,6 +215,7 @@ export default function CoursesPage() {
     e.preventDefault()
     if (!formName.trim()) return
     setSubmitting(true)
+    setAddError('')
 
     // Optimistic add
     const tempId = `temp-${Date.now()}`
@@ -253,10 +256,15 @@ export default function CoursesPage() {
           return next
         })
       } else {
+        const err = await res.json().catch(() => ({}))
         setCourses((prev) => prev.filter((c) => c.id !== tempId))
+        setAddError(err?.detail || `Failed to add course (${res.status}). Make sure the backend is running.`)
+        setShowForm(true)
       }
     } catch {
       setCourses((prev) => prev.filter((c) => c.id !== tempId))
+      setAddError('Cannot reach backend. Make sure it is running: cd backend && python main.py')
+      setShowForm(true)
     }
     setSubmitting(false)
   }
@@ -318,6 +326,20 @@ export default function CoursesPage() {
     setDeletingId(null)
   }
 
+  // ── Seed demo courses ───────────────────────────────────────────────────────
+
+  async function handleSeedDemo() {
+    setSeeding(true)
+    try {
+      const res = await fetch(`${BACKEND}/courses/seed-demo`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) await loadCourses(token)
+    } catch { /* ignore */ }
+    setSeeding(false)
+  }
+
   // ── RAG Recommender ─────────────────────────────────────────────────────────
 
   async function handleRagRecommend() {
@@ -332,7 +354,7 @@ export default function CoursesPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        setRagResults(data.recommendations ?? [])
+        setRagResults(data.results ?? data.recommendations ?? [])
       } else {
         setRagError('Could not fetch recommendations. Try again.')
       }
@@ -438,6 +460,11 @@ export default function CoursesPage() {
               className="bg-white/3 border border-white/10 rounded-2xl p-5 space-y-4"
             >
               <h3 className="font-heading font-semibold text-white text-sm">New Course</h3>
+              {addError && (
+                <div className="bg-red-950/60 border border-red-700/40 rounded-xl px-3 py-2.5">
+                  <p className="text-red-400 text-xs font-body">{addError}</p>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Course Name */}
                 <div className="space-y-1.5">
@@ -456,10 +483,10 @@ export default function CoursesPage() {
                 <div className="space-y-1.5">
                   <label className="text-white/40 text-xs font-body uppercase tracking-wider">URL (optional)</label>
                   <input
-                    type="url"
+                    type="text"
                     value={formUrl}
                     onChange={(e) => setFormUrl(e.target.value)}
-                    placeholder="https://..."
+                    placeholder="https://udemy.com/course/..."
                     className="w-full bg-white/5 border border-white/10 text-white text-sm font-body rounded-xl px-3 py-2.5 placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
                   />
                 </div>
@@ -519,20 +546,52 @@ export default function CoursesPage() {
             </div>
           )}
 
-          {/* Empty state */}
+          {/* Empty state with demo preview */}
           {!loading && courses.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 space-y-4 border border-dashed border-white/10 rounded-2xl">
-              <div className="text-5xl">📚</div>
-              <div className="text-center space-y-1">
-                <p className="text-white/60 font-body text-sm">No courses yet.</p>
-                <p className="text-white/30 font-body text-xs">Add your first course to start tracking!</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-white/30 text-xs font-body">Here&apos;s a preview of what your tracker will look like:</p>
+                <button
+                  onClick={handleSeedDemo}
+                  disabled={seeding}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white/50 hover:text-white hover:border-white/20 text-xs font-heading transition-all disabled:opacity-40"
+                >
+                  {seeding ? <Loader2 size={11} className="animate-spin" /> : <Zap size={11} />}
+                  {seeding ? 'Loading...' : 'Load sample courses'}
+                </button>
               </div>
-              <button
-                onClick={() => setShowForm(true)}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white/60 text-sm font-heading hover:bg-white/10 hover:text-white transition-all"
-              >
-                + Add your first course
-              </button>
+              {/* Demo preview cards — non-interactive */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pointer-events-none select-none opacity-60">
+                {[
+                  { name: "Striver's A2Z DSA Course", platform: "Other", done: 7, total: 20, pct: 35, vel: 0.8 },
+                  { name: "The Complete React Developer", platform: "Udemy", done: 12, total: 30, pct: 40, vel: 1.2 },
+                  { name: "Andrew Ng ML Specialization", platform: "Coursera", done: 4, total: 24, pct: 17, vel: 0.4 },
+                ].map((demo, i) => (
+                  <div key={i} className="bg-white/3 border border-dashed border-white/10 rounded-2xl p-5 space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-2">
+                        <h3 className="font-heading font-semibold text-white text-base">{demo.name}</h3>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-body font-medium ${PLATFORM_STYLES[demo.platform as Platform]?.pill ?? PLATFORM_STYLES.Other.pill}`}>
+                          {demo.platform}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-white/40 text-xs">{demo.done} / {demo.total} sections</span>
+                        <span className="text-xs font-heading font-semibold text-blue-400">{demo.pct}%</span>
+                      </div>
+                      <div className="h-2.5 bg-white/8 rounded-full overflow-hidden">
+                        <div className={`h-full ${getProgressColor(demo.pct)} rounded-full`} style={{ width: `${demo.pct}%` }} />
+                      </div>
+                    </div>
+                    <span className="text-emerald-400/80 text-xs">📈 {demo.vel} sections/day</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-white/20 text-xs font-body text-center pt-2">
+                Click <strong className="text-white/40">&quot;Load sample courses&quot;</strong> to add real demo data, or use <strong className="text-white/40">&quot;+ Add Course&quot;</strong> to start fresh.
+              </p>
             </div>
           )}
 

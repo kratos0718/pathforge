@@ -191,6 +191,63 @@ def update_course_progress(
     return build_course_response(result.data[0])
 
 
+DEMO_COURSES = [
+    {
+        "name": "Striver's A2Z DSA Course",
+        "url": "https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2/",
+        "platform": "Other",
+        "total_sections": 20,
+        "completed_sections": 7,
+        "velocity": 0.8,
+    },
+    {
+        "name": "The Complete React Developer (Udemy)",
+        "url": "https://www.udemy.com/course/complete-react-developer-zero-to-mastery/",
+        "platform": "Udemy",
+        "total_sections": 30,
+        "completed_sections": 12,
+        "velocity": 1.2,
+    },
+    {
+        "name": "Andrew Ng Machine Learning Specialization",
+        "url": "https://www.coursera.org/specializations/machine-learning-introduction",
+        "platform": "Coursera",
+        "total_sections": 24,
+        "completed_sections": 4,
+        "velocity": 0.4,
+    },
+]
+
+
+@router.post("/seed-demo")
+def seed_demo_courses(payload: dict = Depends(verify_token)):
+    """Seed 3 realistic demo courses for a user who has none. Idempotent."""
+    user_id = get_user_id(payload)
+
+    # Only seed if user has no courses yet
+    existing = supabase.table("courses").select("id", count="exact").eq("user_id", user_id).execute()
+    if (existing.count or 0) > 0:
+        return {"seeded": 0, "message": "Already has courses"}
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    created = []
+    for demo in DEMO_COURSES:
+        result = supabase.table("courses").insert({
+            "user_id": user_id,
+            "name": demo["name"],
+            "url": demo["url"],
+            "platform": demo["platform"],
+            "total_sections": demo["total_sections"],
+            "completed_sections": demo["completed_sections"],
+            "velocity": demo["velocity"],
+            "last_updated": now_iso,
+        }).execute()
+        if result.data:
+            created.append(build_course_response(result.data[0]))
+
+    return {"seeded": len(created), "courses": created}
+
+
 @router.delete("/{course_id}")
 def delete_course(course_id: str, payload: dict = Depends(verify_token)):
     user_id = get_user_id(payload)
