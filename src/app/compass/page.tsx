@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Send, Loader2, ArrowRight, RotateCcw } from 'lucide-react'
+import { FallbackBanner } from '@/components/ui/fallback-banner'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -28,6 +29,8 @@ export default function CompassPage() {
   const [profile, setProfile] = useState<Record<string, unknown>>({})
   const [token, setToken] = useState('')
   const [turn, setTurn] = useState(0)
+  const [error, setError] = useState<string | null>(null)
+  const [compassFallback, setCompassFallback] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -55,6 +58,7 @@ export default function CompassPage() {
 
   async function sendToAPI(msgs: Message[], prof: Record<string, unknown>, tok: string) {
     setLoading(true)
+    setError(null)
     try {
       const res = await fetch(`${BACKEND}/roadmap/compass`, {
         method: 'POST',
@@ -63,14 +67,24 @@ export default function CompassPage() {
       })
       const data = await res.json()
 
+      if (!res.ok) {
+        setError(data?.detail || `Server error ${res.status}`)
+        setLoading(false)
+        return
+      }
+
+      if (data.fallback_used) setCompassFallback(true)
+
       if (data.done && data.result) {
         setResult(data.result)
-      } else {
+      } else if (data.message) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
         setTurn(data.turn || 0)
+      } else {
+        setError('No response from AI. Check backend logs.')
       }
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error. Is the backend running?' }])
+      setError('Cannot reach backend. Make sure it is running: cd backend && python main.py')
     }
     setLoading(false)
   }
@@ -87,6 +101,7 @@ export default function CompassPage() {
   async function handleGenerateRoadmap() {
     if (!result) return
     setLoading(true)
+    setError(null)
     try {
       const res = await fetch(`${BACKEND}/roadmap/generate`, {
         method: 'POST',
@@ -94,11 +109,15 @@ export default function CompassPage() {
         body: JSON.stringify({ role: result.role, profile }),
       })
       const data = await res.json()
-      if (data.plan_id) {
+      if (!res.ok) {
+        setError(data?.detail || `Roadmap generation failed (${res.status})`)
+      } else if (data.plan_id) {
         window.location.href = '/roadmap'
+      } else {
+        setError('Roadmap saved but ID missing — try again')
       }
     } catch {
-      alert('Failed to generate roadmap. Is the backend running?')
+      setError('Cannot reach backend. Make sure it is running: cd backend && python main.py')
     }
     setLoading(false)
   }
@@ -187,6 +206,12 @@ export default function CompassPage() {
               )}
             </div>
 
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-2.5">
+                <p className="text-red-400 text-xs font-body">{error}</p>
+              </div>
+            )}
+
             <Button
               onClick={handleGenerateRoadmap}
               disabled={loading}
@@ -205,6 +230,7 @@ export default function CompassPage() {
       ) : (
         /* Chat UI */
         <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
+          {compassFallback && <div className="px-4 pt-4"><FallbackBanner /></div>}
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
             {messages.length === 0 && !loading && (
@@ -240,6 +266,13 @@ export default function CompassPage() {
             )}
             <div ref={bottomRef} />
           </div>
+
+          {/* Error banner */}
+          {error && (
+            <div className="mx-4 mb-2 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-2.5">
+              <p className="text-red-400 text-xs font-body">{error}</p>
+            </div>
+          )}
 
           {/* Input */}
           <div className="border-t border-white/10 p-4">

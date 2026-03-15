@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from routers import profile, roadmap, dsa, courses, challenges, friends, rag, score
+from routers import profile, roadmap, dsa, courses, challenges, friends, rag, score, cgpa, agent, payments
 from auth import verify_token
 import uvicorn
 
@@ -31,6 +31,9 @@ app.include_router(challenges.router, prefix="/challenges", tags=["Challenges"])
 app.include_router(friends.router,    prefix="/friends",    tags=["Friends"])
 app.include_router(rag.router,        prefix="/rag",        tags=["RAG"])
 app.include_router(score.router,      prefix="/score",      tags=["Score"])
+app.include_router(cgpa.router,       prefix="/cgpa",       tags=["CGPA"])
+app.include_router(agent.router,      prefix="/agent",      tags=["Agent"])
+app.include_router(payments.router,   prefix="/payments",   tags=["Payments"])
 
 
 @app.get("/health")

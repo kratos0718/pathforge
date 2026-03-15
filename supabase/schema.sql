@@ -276,6 +276,18 @@ create policy "Users manage own notifications" on public.notifications for all u
 -- ============================================================
 
 -- ============================================================
+-- FUNCTION: increment XP for a user
+-- ============================================================
+create or replace function public.increment_xp(p_user_id uuid, p_amount integer)
+returns void as $$
+begin
+  update public.users
+  set xp = xp + p_amount
+  where id = p_user_id;
+end;
+$$ language plpgsql security definer;
+
+-- ============================================================
 -- TRIGGER: auto-create user profile on signup
 -- ============================================================
 create or replace function public.handle_new_user()

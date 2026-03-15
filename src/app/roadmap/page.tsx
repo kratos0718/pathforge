@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Circle, SkipForward, ChevronDown, ChevronUp, Clock, ExternalLink, Loader2, ArrowRight } from 'lucide-react'
+import { CheckCircle2, Circle, SkipForward, ChevronDown, ChevronUp, Clock, ExternalLink, Loader2, ArrowRight, RefreshCw } from 'lucide-react'
+import { FallbackBanner } from '@/components/ui/fallback-banner'
 
 interface Task {
   id: string
@@ -41,9 +42,13 @@ export default function RoadmapPage() {
   const [generating, setGenerating] = useState(false)
   const [token, setToken] = useState('')
   const [profile, setProfile] = useState<Record<string, unknown>>({})
-  const [, setPlanId] = useState<string | null>(null)
+  // planId managed via the state declared below
   const [openWeeks, setOpenWeeks] = useState<Set<number>>(new Set([1]))
   const [updatingTask, setUpdatingTask] = useState<string | null>(null)
+  const [replanning, setReplanning] = useState(false)
+  const [planId, setPlanId] = useState<string | null>(null)
+  const [generateError, setGenerateError] = useState<string | null>(null)
+  const [roadmapFallback, setRoadmapFallback] = useState(false)
 
   useEffect(() => {
     async function init() {
@@ -94,6 +99,7 @@ export default function RoadmapPage() {
 
   async function generateRoadmap() {
     setGenerating(true)
+    setGenerateError(null)
     try {
       const res = await fetch(`${BACKEND}/roadmap/generate`, {
         method: 'POST',
@@ -101,9 +107,16 @@ export default function RoadmapPage() {
         body: JSON.stringify({ role: profile.target_role || 'SDE', profile }),
       })
       const data = await res.json()
-      if (data.plan_id) await loadPlan(token)
+      if (!res.ok) {
+        setGenerateError(data?.detail || `Server error ${res.status} — check backend logs`)
+      } else if (data.plan_id) {
+        if (data.fallback_used) setRoadmapFallback(true)
+        await loadPlan(token)
+      } else {
+        setGenerateError('Roadmap generated but plan ID missing — try again')
+      }
     } catch {
-      alert('Backend not running. Start it with: cd backend && python main.py')
+      setGenerateError('Cannot reach backend. Make sure it is running: cd backend && python main.py')
     }
     setGenerating(false)
   }
@@ -122,6 +135,35 @@ export default function RoadmapPage() {
       })))
     } catch { /* ignore */ }
     setUpdatingTask(null)
+  }
+
+  async function handleReplan() {
+    if (!planId || replanning) return
+    setReplanning(true)
+    try {
+      // Current week = last week that has any completed task, else 1
+      const completedTasks = weeks.flatMap(w => w.tasks.filter(t => t.status === 'completed'))
+      const skippedTasks = weeks.flatMap(w => w.tasks.filter(t => t.status === 'skipped'))
+      const maxCompletedWeek = completedTasks.length
+        ? Math.max(...completedTasks.map(t => t.week_number))
+        : 1
+
+      const res = await fetch(`${BACKEND}/roadmap/replan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          plan_id: planId,
+          current_week: maxCompletedWeek,
+          completed_task_ids: completedTasks.map(t => t.id),
+          skipped_task_ids: skippedTasks.map(t => t.id),
+          profile,
+        }),
+      })
+      if (res.ok) {
+        await loadPlan(token)
+      }
+    } catch { /* ignore */ }
+    setReplanning(false)
   }
 
   function toggleWeek(week: number) {
@@ -167,6 +209,7 @@ export default function RoadmapPage() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
+        {roadmapFallback && <FallbackBanner />}
         {/* No plan state */}
         {weeks.length === 0 && (
           <div className="text-center py-24 space-y-6">
@@ -179,6 +222,11 @@ export default function RoadmapPage() {
                   : 'Complete the Role Compass first to get a personalised roadmap'}
               </p>
             </div>
+            {generateError && (
+              <div className="max-w-sm mx-auto bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-left">
+                <p className="text-red-400 text-xs font-body leading-relaxed">{generateError}</p>
+              </div>
+            )}
             {profile.target_role ? (
               <Button
                 onClick={generateRoadmap}
@@ -186,7 +234,7 @@ export default function RoadmapPage() {
                 className="bg-white text-black hover:bg-white/90 font-heading font-semibold px-8 h-12 rounded-xl"
               >
                 {generating ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
-                {generating ? 'Generating with AI...' : 'Generate my 16-week roadmap'}
+                {generating ? 'Generating with AI... (takes ~15s)' : 'Generate my 16-week roadmap'}
                 {!generating && <ArrowRight size={16} className="ml-2" />}
               </Button>
             ) : (
@@ -202,6 +250,11 @@ export default function RoadmapPage() {
         {/* Roadmap weeks */}
         {weeks.length > 0 && (
           <div className="space-y-3">
+            {generateError && (
+              <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
+                <p className="text-red-400 text-xs font-body">{generateError}</p>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="font-heading text-2xl font-bold text-white">
@@ -209,15 +262,28 @@ export default function RoadmapPage() {
                 </h1>
                 <p className="font-body text-white/40 text-sm mt-0.5">16 weeks · personalised to your profile</p>
               </div>
-              <Button
-                onClick={generateRoadmap}
-                disabled={generating}
-                variant="outline"
-                className="border-white/10 text-white/50 hover:text-white hover:border-white/30 text-xs h-8 rounded-lg bg-transparent"
-              >
-                {generating ? <Loader2 size={12} className="animate-spin mr-1" /> : null}
-                Regenerate
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* Replan button — show when 3+ tasks are skipped */}
+                {weeks.flatMap(w => w.tasks).filter(t => t.status === 'skipped').length >= 3 && (
+                  <Button
+                    onClick={handleReplan}
+                    disabled={replanning}
+                    className="bg-white/10 text-white hover:bg-white/20 text-xs h-8 rounded-lg border border-white/20 gap-1"
+                  >
+                    {replanning ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                    {replanning ? 'Replanning...' : 'Replan remaining'}
+                  </Button>
+                )}
+                <Button
+                  onClick={generateRoadmap}
+                  disabled={generating}
+                  variant="outline"
+                  className="border-white/10 text-white/50 hover:text-white hover:border-white/30 text-xs h-8 rounded-lg bg-transparent"
+                >
+                  {generating ? <Loader2 size={12} className="animate-spin mr-1" /> : null}
+                  Regenerate
+                </Button>
+              </div>
             </div>
 
             {weeks.map(week => {

@@ -77,3 +77,67 @@ def calculate_readiness_score(payload: dict = Depends(verify_token)):
     supabase.table("readiness_scores").insert(score_record).execute()
 
     return score_record
+
+
+@router.get("/leaderboard")
+def get_score_leaderboard(payload: dict = Depends(verify_token)):
+    """Return the top-10 leaderboard among the current user and their accepted friends,
+    ranked by latest readiness score (falls back to XP when no score exists)."""
+    user_id = get_user_id(payload)
+
+    # Collect current user + accepted friends
+    friends = supabase.table("friendships")\
+        .select("friend_id")\
+        .eq("user_id", user_id)\
+        .eq("status", "accepted")\
+        .execute().data or []
+
+    peer_ids = [f["friend_id"] for f in friends] + [user_id]
+
+    # Fetch basic profile for all peers
+    users_data = supabase.table("users")\
+        .select("id, name, college, xp, streak")\
+        .in_("id", peer_ids)\
+        .execute().data or []
+
+    # Fetch latest readiness score per user
+    # We pull all recent rows and keep only the latest per user_id
+    scores_data = supabase.table("readiness_scores")\
+        .select("user_id, score, calculated_at")\
+        .in_("user_id", peer_ids)\
+        .order("calculated_at", desc=True)\
+        .execute().data or []
+
+    latest_score: dict = {}
+    for row in scores_data:
+        uid = row["user_id"]
+        if uid not in latest_score:
+            latest_score[uid] = row["score"]
+
+    # Build enriched list and sort
+    enriched = []
+    for u in users_data:
+        uid = u["id"]
+        score = latest_score.get(uid)
+        sort_key = score if score is not None else -1  # users with no score sort below scored ones
+        enriched.append({
+            "user_id": uid,
+            "name": u.get("name"),
+            "college": u.get("college"),
+            "xp": u.get("xp") or 0,
+            "streak": u.get("streak") or 0,
+            "readiness_score": score,
+            "_sort_key": sort_key,
+        })
+
+    # Sort: primary by readiness score desc, secondary by xp desc
+    enriched.sort(key=lambda x: (x["_sort_key"], x["xp"]), reverse=True)
+
+    # Take top 10 and assign rank
+    top10 = []
+    for rank, entry in enumerate(enriched[:10], start=1):
+        entry.pop("_sort_key")
+        entry["rank"] = rank
+        top10.append(entry)
+
+    return top10

@@ -49,6 +49,32 @@ export default function AuthPage() {
     setLoading(false)
   }
 
+  async function handleGuestAuth() {
+    setLoading(true)
+    setError('')
+
+    // 1. Try anonymous sign-in (works if enabled in Supabase dashboard)
+    try {
+      const { data, error } = await supabase.auth.signInAnonymously()
+      if (!error && data.session) {
+        window.location.href = '/onboarding'
+        return
+      }
+    } catch { /* anonymous auth disabled — fall through */ }
+
+    // 2. Fallback: sign in as the seeded demo account
+    const { data, error: demoErr } = await supabase.auth.signInWithPassword({
+      email: 'rahul.sharma@dummy.pathforge.dev',
+      password: 'PathForge@123',
+    })
+    if (demoErr) {
+      setError('Guest access unavailable. Please create a free account — it only takes 30 seconds!')
+    } else if (data.session) {
+      window.location.href = '/dashboard'
+    }
+    setLoading(false)
+  }
+
   async function handleGoogleAuth() {
     setError('')
     const { error } = await supabase.auth.signInWithOAuth({
@@ -123,6 +149,19 @@ export default function AuthPage() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
               Continue with Google
+            </Button>
+
+            {/* Guest */}
+            <Button
+              onClick={handleGuestAuth}
+              disabled={loading}
+              variant="outline"
+              className="w-full bg-white/3 border-white/10 text-white/50 hover:bg-white/8 hover:border-white/20 hover:text-white/70 transition-all"
+            >
+              <svg className="w-4 h-4 mr-2 shrink-0 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+              </svg>
+              Continue as Guest
             </Button>
 
             <div className="relative">

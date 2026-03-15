@@ -1,4 +1,4 @@
-import os, json, re
+import os, json, re, logging
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
@@ -7,6 +7,9 @@ from auth import verify_token, get_user_id
 from database import supabase
 from datetime import datetime, timezone
 from dotenv import load_dotenv
+from ai_fallback import get_fallback_roadmap, fallback_compass_response
+
+logger = logging.getLogger("pathforge.ai")
 
 load_dotenv()
 
@@ -69,24 +72,26 @@ async def role_compass(request: CompassRequest, payload: dict = Depends(verify_t
 
     messages = [{"role": m.role, "content": m.content} for m in request.messages]
 
-    response = groq_client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "system", "content": system}] + messages,
-        temperature=0.7,
-        max_tokens=512,
-    )
-
-    reply = response.choices[0].message.content.strip()
+    try:
+        response = groq_client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "system", "content": system}] + messages,
+            temperature=0.7,
+            max_tokens=512,
+        )
+        reply = response.choices[0].message.content.strip()
+    except Exception as exc:
+        logger.error("Compass AI failed [%s: %s] — using fallback", type(exc).__name__, exc)
+        return fallback_compass_response(messages, len(user_turns))
 
     # Check if LLM returned the final JSON result
     if '"done": true' in reply or '"done":true' in reply:
         try:
             result = extract_json(reply)
-            # Save recommended role to user profile
             supabase.table("users").update({
                 "target_role": result["role"]
             }).eq("id", user_id).execute()
-            return {"done": True, "result": result, "message": reply}
+            return {"done": True, "result": result, "message": reply, "fallback_used": False}
         except Exception:
             pass
 
@@ -94,6 +99,7 @@ async def role_compass(request: CompassRequest, payload: dict = Depends(verify_t
         "done": False,
         "message": reply,
         "turn": len(user_turns),
+        "fallback_used": False,
     }
 
 
@@ -139,30 +145,33 @@ class RoadmapGenerateRequest(BaseModel):
 async def generate_roadmap(request: RoadmapGenerateRequest, payload: dict = Depends(verify_token)):
     user_id = get_user_id(payload)
 
+    skills = request.profile.get('current_skills') or []
+    companies = request.profile.get('target_companies') or []
     profile_summary = f"""
 Role: {request.role}
 Semester: {request.profile.get('semester', 'unknown')}
 College tier: {request.profile.get('college_tier', 'unknown')}
-Current skills: {', '.join(request.profile.get('current_skills', []))}
-Target companies: {', '.join(request.profile.get('target_companies', []))}
+Current skills: {', '.join(skills) if skills else 'not specified'}
+Target companies: {', '.join(companies) if companies else 'not specified'}
 """
 
-    response = groq_client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": ROADMAP_SYSTEM},
-            {"role": "user", "content": f"Generate a 16-week plan for this student:\n{profile_summary}"},
-        ],
-        temperature=0.5,
-        max_tokens=4096,
-    )
-
-    raw = response.choices[0].message.content.strip()
-
+    fallback_used = False
     try:
+        response = groq_client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": ROADMAP_SYSTEM},
+                {"role": "user", "content": f"Generate a 16-week plan for this student:\n{profile_summary}"},
+            ],
+            temperature=0.5,
+            max_tokens=8192,
+        )
+        raw = response.choices[0].message.content.strip()
         data = extract_json(raw)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI returned invalid JSON: {str(e)}")
+    except Exception as exc:
+        logger.error("Roadmap generate AI failed [%s: %s] — using fallback", type(exc).__name__, exc)
+        data = get_fallback_roadmap(request.role)
+        fallback_used = True
 
     # Save plan to DB
     plan_result = supabase.table("roadmap_plans").insert({
@@ -192,9 +201,11 @@ Target companies: {', '.join(request.profile.get('target_companies', []))}
             })
 
     if tasks_to_insert:
-        supabase.table("roadmap_tasks").insert(tasks_to_insert).execute()
+        # Insert in batches of 50 to avoid Supabase row limits
+        for i in range(0, len(tasks_to_insert), 50):
+            supabase.table("roadmap_tasks").insert(tasks_to_insert[i:i+50]).execute()
 
-    return {"plan_id": plan_id, "plan": data}
+    return {"plan_id": plan_id, "plan": data, "fallback_used": fallback_used}
 
 
 # ─── Get current plan ─────────────────────────────────────────────────────────
@@ -273,11 +284,13 @@ async def replan(request: ReplanRequest, payload: dict = Depends(verify_token)):
     skipped_count = len(request.skipped_task_ids)
     completed_count = len(request.completed_task_ids)
 
-    response = groq_client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": REPLAN_SYSTEM},
-            {"role": "user", "content": f"""
+    replan_fallback_used = False
+    try:
+        response = groq_client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": REPLAN_SYSTEM},
+                {"role": "user", "content": f"""
 Current week: {request.current_week}
 Weeks remaining: {weeks_remaining}
 Tasks completed so far: {completed_count}
@@ -286,26 +299,32 @@ Student profile: {json.dumps(request.profile)}
 
 Regenerate weeks {request.current_week + 1} through 16 to account for any missed topics.
 """},
-        ],
-        temperature=0.5,
-        max_tokens=4096,
-    )
-
-    raw = response.choices[0].message.content.strip()
-    try:
+            ],
+            temperature=0.5,
+            max_tokens=8192,
+        )
+        raw = response.choices[0].message.content.strip()
         new_weeks = extract_json(raw)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Replan AI error: {str(e)}")
+    except Exception as exc:
+        logger.error("Replan AI failed [%s: %s] — keeping existing plan", type(exc).__name__, exc)
+        # Fallback: keep the remaining weeks from the existing plan unchanged
+        role = request.profile.get("target_role", "SDE") if request.profile else "SDE"
+        fallback_full = get_fallback_roadmap(role)
+        new_weeks = {"weeks": [w for w in fallback_full["weeks"] if w["week"] > request.current_week]}
+        replan_fallback_used = True
 
     # Merge new weeks into existing plan JSON
     existing_weeks = plan.data["weeks_json"].get("weeks", [])
     past_weeks = [w for w in existing_weeks if w["week"] <= request.current_week]
     merged = {"weeks": past_weeks + new_weeks.get("weeks", [])}
 
-    # Update plan version
+    # Fetch current version then increment
+    version_result = supabase.table("roadmap_plans").select("version").eq("id", request.plan_id).single().execute()
+    current_version = version_result.data["version"] if version_result.data else 1
+
     supabase.table("roadmap_plans").update({
         "weeks_json": merged,
-        "version": supabase.table("roadmap_plans").select("version").eq("id", request.plan_id).single().execute().data["version"] + 1,
+        "version": current_version + 1,
     }).eq("id", request.plan_id).execute()
 
     # Delete future tasks and reinsert
@@ -331,4 +350,4 @@ Regenerate weeks {request.current_week + 1} through 16 to account for any missed
     if new_tasks:
         supabase.table("roadmap_tasks").insert(new_tasks).execute()
 
-    return {"plan": merged}
+    return {"plan": merged, "fallback_used": replan_fallback_used}

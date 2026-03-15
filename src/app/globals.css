@@ -57,3 +57,39 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ── PathForge custom animations ──────────────────────────────────────────── */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-title {
+  background: linear-gradient(135deg, #a855f7 0%, #6366f1 25%, #3b82f6 50%, #06b6d4 75%, #a855f7 100%);
+  background-size: 300% 300%;
+  animation: gradient-shift 8s ease infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.animate-gradient-title:hover {
+  filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.45));
+}
+
+@keyframes underline-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
+
+.section-title-underline::after {
+  content: '';
+  display: block;
+  margin-top: 4px;
+  height: 1.5px;
+  width: 100%;
+  background: linear-gradient(90deg, #a855f7, #3b82f6, #06b6d4);
+  border-radius: 9999px;
+  animation: underline-pulse 3s ease-in-out infinite;
+}
