@@ -317,11 +317,6 @@ export default function DSAPage() {
     // Update stats optimistically
     if (newStatus === 'solved') {
       setXp((prev) => prev + 10)
-      setStats((prev) =>
-        prev
-          ? { ...prev, total_solved: prev.total_solved + 1 }
-          : prev,
-      )
       // Spawn XP popup
       const id = ++xpPopupId.current
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
