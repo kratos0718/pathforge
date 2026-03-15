@@ -201,14 +201,12 @@ function ChallengeCard({
             return (
               <div
                 key={p.user_id}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-                  p.is_current_user ? 'bg-blue-500/15 border border-blue-500/30' : 'bg-white/5'
-                }`}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${p.is_current_user ? 'bg-blue-500/15 border border-blue-500/30' : 'bg-white/5'
+                  }`}
               >
                 <span
-                  className={`text-xs font-bold w-5 text-center shrink-0 ${
-                    isLeader ? 'text-amber-400' : 'text-white/40'
-                  }`}
+                  className={`text-xs font-bold w-5 text-center shrink-0 ${isLeader ? 'text-amber-400' : 'text-white/40'
+                    }`}
                 >
                   {isLeader ? <Crown size={13} className="text-amber-400 mx-auto" /> : `#${p.rank}`}
                 </span>
@@ -221,9 +219,8 @@ function ChallengeCard({
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-700 ${
-                        isLeader ? 'bg-emerald-400' : 'bg-blue-400'
-                      }`}
+                      className={`h-full rounded-full transition-all duration-700 ${isLeader ? 'bg-emerald-400' : 'bg-blue-400'
+                        }`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -390,10 +387,10 @@ function CreateModal({
                 form.type === 'course_percent'
                   ? 'e.g. 50 (percent)'
                   : form.type === 'streak'
-                  ? 'e.g. 14 (days)'
-                  : form.type === 'readiness_score'
-                  ? 'e.g. 800 (score)'
-                  : 'e.g. 30 (problems)'
+                    ? 'e.g. 14 (days)'
+                    : form.type === 'readiness_score'
+                      ? 'e.g. 800 (score)'
+                      : 'e.g. 30 (problems)'
               }
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-blue-500/60 focus:bg-white/8 transition-all text-sm"
             />
@@ -427,16 +424,14 @@ function CreateModal({
                       key={fr.user_id}
                       type="button"
                       onClick={() => toggleFriend(fr.user_id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition-all text-left ${
-                        selected
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition-all text-left ${selected
                           ? 'bg-blue-500/20 border-blue-500/40'
                           : 'bg-white/5 border-white/10 hover:bg-white/10'
-                      }`}
+                        }`}
                     >
                       <div
-                        className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                          selected ? 'bg-blue-500 border-blue-500' : 'border-white/30'
-                        }`}
+                        className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${selected ? 'bg-blue-500 border-blue-500' : 'border-white/30'
+                          }`}
                       >
                         {selected && (
                           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">

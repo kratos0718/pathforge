@@ -327,11 +327,6 @@ export default function DSAPage() {
     }
     if (currentStatus === 'solved') {
       setXp((prev) => Math.max(0, prev - 10))
-      setStats((prev) =>
-        prev
-          ? { ...prev, total_solved: Math.max(0, prev.total_solved - 1) }
-          : prev,
-      )
     }
 
     // Sync backend (fire-and-forget)
