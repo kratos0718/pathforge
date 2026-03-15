@@ -160,7 +160,7 @@ function SkeletonChallenge() {
 
 function ChallengeCard({
   challenge,
-  currentUserId,
+  currentUserId: _currentUserId,
 }: {
   challenge: Challenge
   currentUserId: string

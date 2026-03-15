@@ -196,7 +196,7 @@ export default function DSAPage() {
   const [sheets, setSheets] = useState<Sheet[]>([])
   const [activeSheet, setActiveSheet] = useState<Sheet | null>(null)
   const [problems, setProblems] = useState<ProblemWithStatus[]>([])
-  const [stats, setStats] = useState<StatsResponse | null>(null)
+
   const [loadingProblems, setLoadingProblems] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
 
@@ -245,7 +245,6 @@ export default function DSAPage() {
 
         if (statsRes.ok) {
           const statsData: StatsResponse = await statsRes.json()
-          setStats(statsData)
           setXp((statsData.total_solved || 0) * 10)
         }
       } catch {
