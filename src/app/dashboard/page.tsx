@@ -254,6 +254,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [userId, setUserId] = useState('')
   const [userEmail, setUserEmail] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [showProfile, setShowProfile] = useState(false)
   const [loading, setLoading] = useState(true)
   const [tasks, setTasks] = useState<DailyTask[]>([])
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
@@ -283,6 +285,7 @@ export default function DashboardPage() {
       if (!session) { window.location.href = '/auth'; return }
       setUserId(session.user.id)
       setUserEmail(session.user.email ?? '')
+      setAvatarUrl(session.user.user_metadata?.avatar_url ?? '')
       loadCompleted(session.user.id)
       const { data } = await supabase.from('users')
         .select('name, target_role, semester, college, xp, streak, tier')
@@ -459,11 +462,130 @@ export default function DashboardPage() {
                 )}
               </AnimatePresence>
             </div>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              onClick={async () => { await supabase.auth.signOut(); window.location.href = '/auth' }}
-              className="flex items-center gap-1.5 text-white/25 hover:text-white/60 text-xs transition-colors px-2 py-1.5 rounded-xl hover:bg-white/5">
-              <LogOut size={13} /> <span className="hidden sm:inline">Sign out</span>
-            </motion.button>
+            {/* Profile avatar button */}
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={() => setShowProfile(v => !v)}
+                className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl border border-white/10 hover:border-white/20 transition-all"
+                style={{ background: 'rgba(255,255,255,0.05)' }}
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="avatar" className="w-7 h-7 rounded-lg object-cover" />
+                ) : (
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center font-heading font-bold text-xs text-white"
+                    style={{ background: 'linear-gradient(135deg, #7C3AED, #0EA5E9)' }}>
+                    {user?.name?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                )}
+                <span className="hidden sm:block text-xs font-heading font-semibold text-white/80 max-w-[80px] truncate">
+                  {user?.name?.split(' ')[0] ?? 'Profile'}
+                </span>
+                <ChevronDown size={11} className="text-white/40 hidden sm:block" />
+              </motion.button>
+
+              <AnimatePresence>
+                {showProfile && (
+                  <>
+                    {/* Backdrop */}
+                    <div className="fixed inset-0 z-40" onClick={() => setShowProfile(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.18 }}
+                      className="absolute right-0 top-12 w-72 rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50"
+                      style={{ background: 'rgba(10,8,24,0.97)', backdropFilter: 'blur(24px)' }}
+                    >
+                      {/* Profile header */}
+                      <div className="p-4 border-b border-white/8"
+                        style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(14,165,233,0.08) 100%)' }}>
+                        <div className="flex items-center gap-3">
+                          {avatarUrl ? (
+                            <img src={avatarUrl} alt="avatar" className="w-12 h-12 rounded-xl object-cover ring-2 ring-violet-500/40" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-xl flex items-center justify-center font-heading font-bold text-xl text-white ring-2 ring-violet-500/40"
+                              style={{ background: 'linear-gradient(135deg, #7C3AED, #0EA5E9)' }}>
+                              {user?.name?.[0]?.toUpperCase() ?? '?'}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-heading font-bold text-white text-sm truncate">{user?.name ?? 'Student'}</p>
+                              {user?.tier === 'premium' && (
+                                <span className="text-[9px] bg-gradient-to-r from-yellow-400 to-orange-400 text-black font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shrink-0">
+                                  <Crown size={7} /> PRO
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-white/50 text-[11px] font-body truncate">{userEmail}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stats row */}
+                      <div className="grid grid-cols-3 divide-x divide-white/8 border-b border-white/8">
+                        {[
+                          { label: 'Level', value: `Lv ${level}`, icon: '⚡' },
+                          { label: 'Streak', value: `${user?.streak ?? 0}d`, icon: '🔥' },
+                          { label: 'XP', value: String(user?.xp ?? 0), icon: '✨' },
+                        ].map(s => (
+                          <div key={s.label} className="flex flex-col items-center py-3 px-2">
+                            <span className="text-sm">{s.icon}</span>
+                            <p className="font-heading font-bold text-white text-sm">{s.value}</p>
+                            <p className="text-white/35 text-[9px] font-body">{s.label}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Details */}
+                      <div className="p-3 space-y-1.5 border-b border-white/8">
+                        {[
+                          { icon: GraduationCap, label: 'College', value: user?.college ?? '—' },
+                          { icon: BookOpen, label: 'Semester', value: `Semester ${user?.semester ?? '—'}` },
+                          { icon: Target, label: 'Target Role', value: user?.target_role ?? 'SDE' },
+                        ].map(d => (
+                          <div key={d.label} className="flex items-center gap-2.5 px-1 py-1">
+                            <d.icon size={12} className="text-white/35 shrink-0" />
+                            <span className="text-white/40 text-xs font-body">{d.label}</span>
+                            <span className="text-white/80 text-xs font-body ml-auto truncate max-w-[130px]">{d.value}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="p-2 space-y-0.5">
+                        <a href="/score"
+                          onClick={() => setShowProfile(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/6 transition-colors text-sm font-body text-white/70 hover:text-white">
+                          <TrendingUp size={13} className="text-violet-400" /> Readiness Score
+                          {readinessScore !== null && <span className="ml-auto text-xs font-heading font-bold text-violet-400">{Math.round(readinessScore)}%</span>}
+                        </a>
+                        <a href="/company"
+                          onClick={() => setShowProfile(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/6 transition-colors text-sm font-body text-white/70 hover:text-white">
+                          <Building2 size={13} className="text-cyan-400" /> Company Intel
+                        </a>
+                        {user?.tier !== 'premium' && (
+                          <a href="/upgrade"
+                            onClick={() => setShowProfile(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors text-sm font-body font-semibold"
+                            style={{ background: 'rgba(234,179,8,0.08)', color: '#FCD34D' }}>
+                            <Crown size={13} /> Upgrade to Premium
+                            <span className="ml-auto text-[10px] opacity-60">₹99/mo</span>
+                          </a>
+                        )}
+                        <button
+                          onClick={async () => { await supabase.auth.signOut(); window.location.href = '/auth' }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-red-500/8 transition-colors text-sm font-body text-red-400/70 hover:text-red-400">
+                          <LogOut size={13} /> Sign out
+                        </button>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </motion.nav>
       </div>
