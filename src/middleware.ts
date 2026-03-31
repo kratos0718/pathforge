@@ -24,16 +24,16 @@ export async function middleware(req: NextRequest) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const protectedPaths = ['/dashboard', '/onboarding', '/roadmap', '/dsa', '/cgpa', '/courses', '/friends', '/challenges']
   const isProtected = protectedPaths.some((path) => req.nextUrl.pathname.startsWith(path))
 
-  if (!session && isProtected) {
+  if (!user && isProtected) {
     return NextResponse.redirect(new URL('/auth', req.url))
   }
 
-  if (session && req.nextUrl.pathname === '/auth') {
+  if (user && req.nextUrl.pathname === '/auth') {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
