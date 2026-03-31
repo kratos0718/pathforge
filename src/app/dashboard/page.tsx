@@ -183,7 +183,7 @@ export default function DashboardPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-[#09090F] flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1A0B2E 0%, #0D1B3E 50%, #1A0B2E 100%)' }}>
       <div className="flex gap-2">
         {[0, 120, 240].map(d => (
           <motion.span key={d} className="w-2.5 h-2.5 rounded-full"
@@ -203,27 +203,32 @@ export default function DashboardPage() {
   const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? '').split(',').map(e => e.trim())
 
   return (
-    <div className="min-h-screen text-white bg-[#09090F] relative overflow-x-hidden">
+    <div className="min-h-screen text-white relative overflow-x-hidden"
+      style={{ background: 'linear-gradient(135deg, #1A0B2E 0%, #0D1B3E 55%, #1A0B2E 100%)' }}>
 
-      {/* ── Background: grid + gradient orbs ─────────────────────────────── */}
+      {/* ── Background: grid + vivid orbs ───────────────────────────────── */}
       <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-        {/* Grid */}
+        {/* Subtle dot grid */}
         <div className="absolute inset-0" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
         }} />
-        {/* Orb 1 — orange top-left */}
-        <motion.div animate={{ x: [0, 30, 0], y: [0, -20, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-[0.07]"
-          style={{ background: 'radial-gradient(circle, #FF6B35 0%, transparent 70%)' }} />
+        {/* Orb 1 — hot orange top-left */}
+        <motion.div animate={{ x: [0, 40, 0], y: [0, -25, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(255,107,53,0.28) 0%, transparent 65%)' }} />
         {/* Orb 2 — violet top-right */}
-        <motion.div animate={{ x: [0, -25, 0], y: [0, 20, 0] }} transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -top-32 -right-48 w-[700px] h-[700px] rounded-full opacity-[0.08]"
-          style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 70%)' }} />
-        {/* Orb 3 — cyan bottom-center */}
-        <motion.div animate={{ x: [0, 20, 0], y: [0, -15, 0] }} transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full opacity-[0.05]"
-          style={{ background: 'radial-gradient(circle, #0EA5E9 0%, transparent 70%)' }} />
+        <motion.div animate={{ x: [0, -30, 0], y: [0, 25, 0] }} transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute -top-20 -right-40 w-[750px] h-[750px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.30) 0%, transparent 65%)' }} />
+        {/* Orb 3 — sky blue bottom-center */}
+        <motion.div animate={{ x: [0, 25, 0], y: [0, -20, 0] }} transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(14,165,233,0.18) 0%, transparent 65%)' }} />
+        {/* Orb 4 — pink mid-left accent */}
+        <motion.div animate={{ x: [0, -20, 0], y: [0, 30, 0] }} transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute top-1/2 -left-20 w-[400px] h-[400px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(219,39,119,0.12) 0%, transparent 65%)' }} />
       </div>
 
       {/* ── Floating Nav ──────────────────────────────────────────────────── */}
