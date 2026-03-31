@@ -326,16 +326,16 @@ export default function DashboardPage() {
 
         {/* ── Hero ──────────────────────────────────────────────────────── */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.55 }}>
-          <p className="text-white/25 text-sm font-body mb-2 tracking-wide">{formatDate()}</p>
+          <p className="text-white/70 text-sm font-body mb-2 tracking-wide">{formatDate()}</p>
           <h1 className="font-heading font-extrabold leading-[1.05] tracking-tight">
-            <span className="block text-white/40 text-2xl sm:text-3xl">{getGreeting()},</span>
+            <span className="block text-white/85 text-2xl sm:text-3xl">{getGreeting()},</span>
             <span className="block text-4xl sm:text-6xl animate-gradient-title">{user?.name?.split(' ')[0] ?? 'there'} 👋</span>
           </h1>
-          <p className="text-white/30 font-body text-sm mt-3 flex items-center gap-2 flex-wrap">
+          <p className="text-white/75 font-body text-sm mt-3 flex items-center gap-2 flex-wrap">
             <span>{user?.college}</span>
-            <span className="text-white/15">·</span>
+            <span className="text-white/40">·</span>
             <span>Semester {user?.semester}</span>
-            <span className="text-white/15">·</span>
+            <span className="text-white/40">·</span>
             <span className="font-semibold" style={{ color: '#FF6B35' }}>Targeting {user?.target_role ?? 'SDE'}</span>
           </p>
         </motion.div>
@@ -363,10 +363,10 @@ export default function DashboardPage() {
               <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: `linear-gradient(90deg, ${s.from}, ${s.to})` }} />
               <div className="flex items-center gap-1.5 mb-3" style={{ color: s.from }}>
                 {s.icon}
-                <span className="text-xs font-body text-white/40">{s.label}</span>
+                <span className="text-xs font-body text-white/75">{s.label}</span>
               </div>
               <p className="font-heading text-2xl font-extrabold text-white">{s.value}</p>
-              <p className="text-white/25 text-[11px] mt-0.5 font-body">{s.sub}</p>
+              <p className="text-white/65 text-[11px] mt-0.5 font-body">{s.sub}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -385,7 +385,7 @@ export default function DashboardPage() {
                 <div>
                   <h2 className="font-heading font-bold text-white text-lg">Today&apos;s Forge</h2>
                   {!tasksLoading && (
-                    <p className="text-white/35 text-xs font-body">
+                    <p className="text-white/70 text-xs font-body">
                       {doneCount}/{tasks.length} done
                       {totalXpToday > 0 && <span className="text-yellow-400/80 ml-2">· +{totalXpToday} XP earned</span>}
                     </p>
@@ -406,9 +406,9 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-1.5">
                   <Zap size={11} className="text-yellow-400 fill-yellow-400" />
-                  <span className="text-[11px] text-white/50 font-body">Level {level}</span>
+                  <span className="text-[11px] text-white/80 font-body">Level {level}</span>
                 </div>
-                <span className="text-[11px] text-white/30 font-body">{500 - ((user?.xp ?? 0) % 500)} XP to next level</span>
+                <span className="text-[11px] text-white/65 font-body">{500 - ((user?.xp ?? 0) % 500)} XP to next level</span>
               </div>
               <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
                 <motion.div className="h-full rounded-full"
@@ -474,7 +474,7 @@ export default function DashboardPage() {
                               </span>
                             )}
                           </div>
-                          <p className={`text-xs font-body ${done ? 'text-white/15' : 'text-white/35'}`}>{task.subtitle}</p>
+                          <p className={`text-xs font-body ${done ? 'text-white/20' : 'text-white/75'}`}>{task.subtitle}</p>
                         </div>
 
                         <div className="shrink-0 flex flex-col items-end gap-1.5 ml-2">
@@ -482,7 +482,7 @@ export default function DashboardPage() {
                             <Zap size={9} />
                             <span className="text-[10px] font-heading">{task.xp}</span>
                           </div>
-                          <div className="flex items-center gap-1 text-white/20">
+                          <div className="flex items-center gap-1 text-white/60">
                             <Clock size={9} />
                             <span className="text-[10px] font-body">{task.minutes}m</span>
                           </div>
@@ -546,7 +546,7 @@ export default function DashboardPage() {
             {/* Score Ring */}
             <div className="rounded-2xl p-5 border border-white/8 flex flex-col items-center"
               style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <p className="text-xs text-white/30 font-body uppercase tracking-widest mb-4">Readiness Score</p>
+              <p className="text-xs text-white/70 font-body uppercase tracking-widest mb-4">Readiness Score</p>
               {readinessScore !== null ? (
                 <>
                   <div className="relative w-28 h-28 mb-3">
@@ -561,10 +561,10 @@ export default function DashboardPage() {
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="font-heading text-3xl font-extrabold text-white">{Math.round(readinessScore)}</span>
-                      <span className="text-[10px] text-white/25">/100</span>
+                      <span className="text-[10px] text-white/60">/100</span>
                     </div>
                   </div>
-                  <p className="text-xs text-white/40 font-body text-center">
+                  <p className="text-xs text-white/75 font-body text-center">
                     {readinessScore >= 80 ? 'Placement ready 🚀' : readinessScore >= 60 ? 'Good progress 📈' : readinessScore >= 40 ? 'Stay consistent 💪' : 'Time to grind 🔥'}
                   </p>
                   <a href="/score" className="mt-3 text-[11px] text-violet-400/60 hover:text-violet-400 flex items-center gap-1 transition-colors">
@@ -573,7 +573,7 @@ export default function DashboardPage() {
                 </>
               ) : (
                 <div className="text-center py-2">
-                  <p className="text-white/20 text-xs mb-3">Not yet calculated</p>
+                  <p className="text-white/60 text-xs mb-3">Not yet calculated</p>
                   <a href="/score" className="text-xs px-4 py-2 rounded-xl font-body transition-colors border border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
                     Calculate now →
                   </a>
@@ -591,7 +591,7 @@ export default function DashboardPage() {
                   <span className="text-sm font-heading font-bold text-yellow-400">Go Premium</span>
                   <span className="ml-auto text-[10px] text-yellow-400/50 border border-yellow-500/20 px-1.5 py-0.5 rounded-full">₹99/mo</span>
                 </div>
-                <p className="text-xs text-white/35 font-body">AI weekly check-ins · unlimited DSA · adaptive replanning</p>
+                <p className="text-xs text-white/75 font-body">AI weekly check-ins · unlimited DSA · adaptive replanning</p>
               </motion.a>
             )}
 
@@ -628,7 +628,7 @@ export default function DashboardPage() {
 
                 <div className="flex-1 min-w-0">
                   <h3 className="font-heading font-bold text-white text-base leading-tight group-hover:text-white transition-colors">{m.title}</h3>
-                  <p className="text-white/40 text-xs font-body mt-1 leading-relaxed">{m.desc}</p>
+                  <p className="text-white/75 text-xs font-body mt-1 leading-relaxed">{m.desc}</p>
                 </div>
 
                 {/* Arrow */}
@@ -686,7 +686,7 @@ function CheckinPanel() {
         <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7C3AED, #0EA5E9)' }}>
           <CheckCircle2 size={12} className="text-white" />
         </div>
-        <span className="text-sm font-heading font-semibold text-white/70">Weekly Check-in</span>
+        <span className="text-sm font-heading font-semibold text-white/90">Weekly Check-in</span>
       </div>
       {step === 'done' ? (
         <p className="text-xs text-emerald-400 font-body flex items-center gap-1.5"><CheckCircle2 size={11} /> {result}</p>
