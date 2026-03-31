@@ -13,8 +13,6 @@ import {
   Shield,
 } from 'lucide-react'
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-
 interface UserProfile {
   name: string
   email: string
@@ -34,14 +32,11 @@ export default function UpgradePage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [paymentLoading, setPaymentLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [token, setToken] = useState('')
 
   useEffect(() => {
     async function init() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { window.location.href = '/auth'; return }
-
-      setToken(session.access_token)
 
       const { data } = await supabase
         .from('users')
@@ -69,82 +64,78 @@ export default function UpgradePage() {
   async function handleUpgrade() {
     setPaymentLoading(true)
     try {
-      const orderRes = await fetch(`${BACKEND}/payments/create-order`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (orderRes.status === 503) {
-        alert('Payment coming soon! We\'re setting up billing. Stay tuned.')
-        setPaymentLoading(false)
-        return
-      }
-
-      if (!orderRes.ok) {
-        alert('Failed to create payment order. Please try again.')
-        setPaymentLoading(false)
-        return
-      }
-
+      // 1. Create order via Next.js API route (no external backend needed)
+      const orderRes = await fetch('/api/payments/create-order', { method: 'POST' })
       const orderData = await orderRes.json()
 
-      const loaded = await loadRazorpayScript()
-      if (!loaded) {
-        alert('Failed to load payment gateway. Please check your connection.')
+      if (orderRes.status === 503) {
+        alert('Payment coming soon! Razorpay keys not configured yet.')
+        setPaymentLoading(false)
+        return
+      }
+      if (!orderRes.ok) {
+        alert(orderData.error ?? 'Failed to create payment order. Please try again.')
         setPaymentLoading(false)
         return
       }
 
+      // 2. Load Razorpay checkout SDK
+      const loaded = await loadRazorpayScript()
+      if (!loaded) {
+        alert('Failed to load payment gateway. Check your internet connection.')
+        setPaymentLoading(false)
+        return
+      }
+
+      // 3. Open Razorpay checkout
       const options = {
         key: orderData.key,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'PathForge Premium',
-        description: 'Monthly subscription',
+        name: 'PathForge',
+        description: 'Premium — Monthly',
+        image: '/icon.svg',
         order_id: orderData.order_id,
         handler: async (response: {
           razorpay_payment_id: string
           razorpay_order_id: string
           razorpay_signature: string
         }) => {
-          try {
-            const verifyRes = await fetch(`${BACKEND}/payments/verify`, {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            })
-            if (verifyRes.ok) {
-              setSuccess(true)
-            } else {
-              alert('Payment verification failed. Please contact support.')
-            }
-          } catch {
-            alert('Payment verification failed. Please contact support.')
+          // 4. Verify signature + upgrade tier server-side
+          const verifyRes = await fetch('/api/payments/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(response),
+          })
+          const verifyData = await verifyRes.json()
+          if (verifyRes.ok) {
+            setSuccess(true)
+          } else {
+            alert(verifyData.error ?? 'Payment verification failed. Contact support@pathforge.dev')
           }
         },
         prefill: {
           name: userProfile?.name ?? '',
           email: userProfile?.email ?? '',
         },
-        theme: { color: '#f59e0b' },
+        notes: { platform: 'pathforge_web' },
+        theme: { color: '#7C3AED' },
+        modal: {
+          ondismiss: () => setPaymentLoading(false),
+        },
       }
 
       const rzp = new window.Razorpay(options)
+      rzp.on('payment.failed', (r: { error: { description: string } }) => {
+        alert(`Payment failed: ${r.error.description}`)
+        setPaymentLoading(false)
+      })
       rzp.open()
-    } catch {
+    } catch (err) {
+      console.error(err)
       alert('Something went wrong. Please try again.')
+      setPaymentLoading(false)
     }
-    setPaymentLoading(false)
   }
 
   if (loading) {
