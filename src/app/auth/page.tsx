@@ -234,12 +234,19 @@ function AuthInner() {
       </div>
 
       {/* ── Feature pills at bottom ───────────────────────── */}
-      <div className="relative z-10 flex flex-wrap justify-center gap-3 px-4 pb-8">
+      <div className="relative z-10 flex flex-wrap justify-center gap-3 px-4 pb-4">
         {['🧭 Role Compass AI', '🗺️ 16-week Roadmap', '💻 DSA Tracker', '👥 Friend Challenges', '📊 Readiness Score'].map(f => (
           <span key={f} className="bg-white/5 border border-white/10 text-white/40 text-xs px-3 py-1.5 rounded-full backdrop-blur-sm">
             {f}
           </span>
         ))}
+      </div>
+      <div className="relative z-10 flex justify-center gap-4 pb-8 text-xs text-white/25 font-body">
+        <a href="/terms" className="hover:text-white/50 transition-colors">Terms of Service</a>
+        <span>·</span>
+        <a href="/privacy" className="hover:text-white/50 transition-colors">Privacy Policy</a>
+        <span>·</span>
+        <a href="mailto:support@pathforge.dev" className="hover:text-white/50 transition-colors">Contact</a>
       </div>
     </div>
   )
