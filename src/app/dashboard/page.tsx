@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import {
   Compass, Map, Calculator, Code2, BookOpen, Users,
   Flame, Zap, TrendingUp, LogOut, ChevronRight, Bell,
-  Trophy, Crown, CheckCircle2, Clock, Target, Star,
+  Trophy, Crown, CheckCircle2, Clock, Target, Star, GraduationCap, ShieldCheck,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -69,6 +69,7 @@ export default function DashboardPage() {
   const [activeChallenges, setActiveChallenges] = useState<number>(0)
   const [showNotifs, setShowNotifs] = useState(false)
   const [userId, setUserId] = useState('')
+  const [userEmail, setUserEmail] = useState('')
 
   useEffect(() => {
     async function loadDashboard() {
@@ -76,6 +77,7 @@ export default function DashboardPage() {
       if (!session) { window.location.href = '/auth'; return }
       setToken(session.access_token)
       setUserId(session.user.id)
+      setUserEmail(session.user.email ?? '')
 
       const { data } = await supabase
         .from('users')
@@ -197,6 +199,14 @@ export default function DashboardPage() {
           )}
         </div>
         <div className="flex items-center gap-4">
+          <a href="/subjects" className="hidden md:flex items-center gap-1.5 text-white/40 hover:text-white text-xs transition-colors">
+            <GraduationCap size={14} /> Subjects
+          </a>
+          {process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',').map(e => e.trim()).includes(userEmail) && (
+            <a href="/admin" className="hidden md:flex items-center gap-1.5 text-rose-400/60 hover:text-rose-400 text-xs transition-colors">
+              <ShieldCheck size={14} /> Admin
+            </a>
+          )}
           <div className="flex items-center gap-1.5 text-orange-400 text-sm font-body">
             <Flame size={14} className="fill-orange-400" />
             <span className="font-semibold">{user?.streak ?? 0}</span>
@@ -399,6 +409,7 @@ export default function DashboardPage() {
               <ModuleCard icon={<Users size={20} />} title="Friends" description="Find batchmates, activity feed, progress" status="live" href="/friends" color="pink" />
               <ModuleCard icon={<Flame size={20} />} title="Challenges" description="Create challenges, live leaderboards" status="live" href="/challenges" color="rose" />
               <ModuleCard icon={<Trophy size={20} />} title="Readiness Score" description="Your placement readiness with full breakdown" status="live" href="/score" color="yellow" />
+              <ModuleCard icon={<GraduationCap size={20} />} title="CSE Subjects" description="OS, DBMS, CN, OOP, Sys Design — full learning paths" status="live" href="/subjects" color="indigo" />
             </div>
           </div>
 
@@ -618,6 +629,7 @@ function ModuleCard({
     pink:    { dot: 'bg-pink-400',    hover: 'hover:border-pink-500/30' },
     rose:    { dot: 'bg-rose-400',    hover: 'hover:border-rose-500/30' },
     yellow:  { dot: 'bg-yellow-400',  hover: 'hover:border-yellow-500/30' },
+    indigo:  { dot: 'bg-indigo-400',  hover: 'hover:border-indigo-500/40' },
   }
   const c = colorClasses[color] ?? colorClasses.blue
 
