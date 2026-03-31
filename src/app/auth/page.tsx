@@ -88,7 +88,7 @@ function AuthInner() {
   }
 
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden">
+    <div className="relative min-h-screen page-bg overflow-hidden">
 
       {/* ── 3D background scene ───────────────────────────── */}
       <div className="absolute inset-0">

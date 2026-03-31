@@ -58,6 +58,21 @@
   }
 }
 
+/* ── PathForge global page background ────────────────────────────────────── */
+.page-bg {
+  background: linear-gradient(135deg, #1A0B2E 0%, #0D1B3E 55%, #1A0B2E 100%);
+}
+/* Sticky nav: semi-transparent deep violet instead of pure black */
+.nav-bg {
+  background: rgba(13, 9, 30, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+/* Select/dropdown bg to match theme */
+.select-bg {
+  background: #130a24;
+}
+
 /* ── PathForge custom animations ──────────────────────────────────────────── */
 
 /* Smooth pulse for skeleton loaders */

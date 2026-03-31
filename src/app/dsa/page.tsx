@@ -379,7 +379,7 @@ export default function DSAPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen page-bg text-white">
       {/* XP Popups (fixed, pointer-events-none) */}
       {xpPopups.map((popup) => (
         <div
@@ -396,7 +396,7 @@ export default function DSAPage() {
       ))}
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between sticky top-0 bg-black/95 backdrop-blur z-30">
+      <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between sticky top-0 nav-bg z-30">
         <div className="flex items-center gap-3">
           <a
             href="/dashboard"

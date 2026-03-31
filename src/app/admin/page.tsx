@@ -103,7 +103,7 @@ export default function AdminPage() {
       : <ChevronDown size={12} className="opacity-20" />
 
   if (loading) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="min-h-screen page-bg flex items-center justify-center">
       <div className="flex gap-1">
         {[0, 150, 300].map((d) => (
           <span key={d} className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />
@@ -113,7 +113,7 @@ export default function AdminPage() {
   )
 
   if (error) return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6">
+    <div className="min-h-screen page-bg flex items-center justify-center p-6">
       <div className="bg-red-950/60 border border-red-700/50 rounded-2xl p-8 max-w-md text-center">
         <p className="text-red-400 text-sm mb-4">{error}</p>
         <a href="/dashboard" className="text-white/40 hover:text-white text-sm">← Back to dashboard</a>
@@ -122,7 +122,7 @@ export default function AdminPage() {
   )
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen page-bg text-white">
       {/* Nav */}
       <nav className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">

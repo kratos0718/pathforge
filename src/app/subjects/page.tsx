@@ -295,7 +295,7 @@ export default function SubjectsPage() {
   const visible = filter === 'All' ? SUBJECTS : SUBJECTS.filter((s) => s.importance === filter)
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen page-bg text-white">
       {/* Header */}
       <div className="border-b border-white/10 px-6 py-4 flex items-center gap-3">
         <a href="/dashboard" className="text-white/40 hover:text-white text-sm transition-colors flex items-center gap-1">
