@@ -85,7 +85,7 @@ export default function ScorePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen page-bg flex items-center justify-center">
         <div className="flex gap-1">
           <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
           <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -115,7 +115,7 @@ export default function ScorePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen page-bg text-white">
       {/* Navbar */}
       <nav className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
         <a

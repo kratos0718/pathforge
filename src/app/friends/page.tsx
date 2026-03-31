@@ -362,9 +362,9 @@ export default function FriendsPage() {
   if (!token) return null
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen page-bg text-white">
       {/* Header */}
-      <div className="border-b border-white/10 bg-black/80 backdrop-blur-sm sticky top-0 z-20">
+      <div className="border-b border-white/10 nav-bg sticky top-0 z-20">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <button
             onClick={() => router.push('/dashboard')}

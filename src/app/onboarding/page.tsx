@@ -95,7 +95,7 @@ export default function OnboardingPage() {
   const progress = ((step - 1) / 5) * 100
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen page-bg flex items-center justify-center p-4">
       <div className="w-full max-w-lg space-y-6">
         {/* Header */}
         <div className="text-center">
