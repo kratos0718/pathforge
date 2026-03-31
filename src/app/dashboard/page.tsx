@@ -7,6 +7,7 @@ import {
   Flame, Zap, LogOut, Bell, Trophy, Crown,
   CheckCircle2, Clock, Target, GraduationCap, ShieldCheck,
   TrendingUp, ArrowRight, Plus, RotateCcw, Sparkles, ArrowUpRight,
+  Quote, ChevronDown, ChevronUp, Building2,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { DailyTask } from '@/app/api/tasks/today/route'
@@ -73,6 +74,140 @@ const MODULES = [
     href: '/subjects',
     from: '#0891B2', to: '#22D3EE', shadow: 'rgba(8,145,178,0.35)',
     text: 'text-cyan-100',
+  },
+]
+
+// ─── Interview Stories ────────────────────────────────────────────────────────
+const STORIES = [
+  {
+    id: 1,
+    name: 'Arjun Sharma',
+    college: 'NIT Trichy',
+    batch: '2024',
+    company: 'Google',
+    role: 'SDE-1, Bangalore',
+    avatar: 'AS',
+    avatarGrad: 'from-blue-500 to-cyan-400',
+    companyColor: '#4285F4',
+    companyBg: 'rgba(66,133,244,0.12)',
+    companyBorder: 'rgba(66,133,244,0.25)',
+    tagline: 'From Tier-2 college to Google — 8 months of focused prep',
+    story: `I started prep in July 2023 with zero prior DSA knowledge. My college wasn't great for placements so I had to figure everything out myself. I followed Striver's A2Z sheet religiously — took me 5 months to complete it. The last 3 months were all about mock interviews and system design.
+
+Google's process had 5 rounds: 2 DSA, 1 low-level design, 1 system design, and 1 Googleyness. The DSA rounds focused heavily on graphs and DP — both topics I almost skipped early on. My biggest mistake early on was solving too many easy problems instead of grinding mediums.`,
+    tips: [
+      'Do Striver A2Z completely — don\'t skip topics you find hard',
+      'Practice explaining your thought process out loud while coding',
+      'System design: start with requirements, then high-level, then deep dive',
+      'Mock interviews are non-negotiable — at least 20 before the real thing',
+      'Don\'t underestimate OS and CN — Google asks them in depth',
+    ],
+    ctc: '₹32 LPA',
+    duration: '8 months prep',
+  },
+  {
+    id: 2,
+    name: 'Priya Nair',
+    college: 'BITS Pilani',
+    batch: '2024',
+    company: 'Microsoft',
+    role: 'SDE-1, Hyderabad',
+    avatar: 'PN',
+    avatarGrad: 'from-violet-500 to-purple-400',
+    companyColor: '#00A4EF',
+    companyBg: 'rgba(0,164,239,0.12)',
+    companyBorder: 'rgba(0,164,239,0.25)',
+    tagline: 'Cracked Microsoft with 3 failed attempts in semester 5',
+    story: `I failed OA rounds twice before cracking Microsoft. Both times I panicked under time pressure. What changed the third time was that I stopped treating OA as a final exam and started treating every LeetCode problem as practice for OA conditions — timer on, no hints, write actual code in the editor.
+
+Microsoft's interview had 3 technical rounds and 1 HR. Each round had 2 DSA problems and some OOPS/design questions. Round 3 was the hardest — the interviewer kept pushing follow-ups even after I solved the main problem. Stay calm, think out loud, never give up mid-problem.`,
+    tips: [
+      'Solve LeetCode with a timer — simulate real test conditions always',
+      'OOPS concepts are heavily tested at Microsoft — master them thoroughly',
+      'For every problem, discuss brute → better → optimal before coding',
+      'Behavioural prep matters — have 5-6 STAR stories ready',
+      'Failures are data points — debrief after every OA and interview',
+    ],
+    ctc: '₹26 LPA',
+    duration: '6 months prep',
+  },
+  {
+    id: 3,
+    name: 'Rohit Verma',
+    college: 'Amity University, Noida',
+    batch: '2024',
+    company: 'Amazon',
+    role: 'SDE-1, Chennai',
+    avatar: 'RV',
+    avatarGrad: 'from-orange-500 to-yellow-400',
+    companyColor: '#FF9900',
+    companyBg: 'rgba(255,153,0,0.12)',
+    companyBorder: 'rgba(255,153,0,0.25)',
+    tagline: 'Tier-3 college, no internship — cracked Amazon in final year',
+    story: `Everyone told me Amazon won't shortlist from my college. I didn't listen. I applied off-campus through Amazon's careers portal, got an OA, cleared it, and went through 4 interview rounds. The key insight: Amazon doesn't care about your college as much as your problem-solving and Leadership Principles.
+
+Every single Amazon round had LP questions woven in. "Tell me about a time you disagreed with a manager" "When did you take ownership beyond your role?" — prepare these as seriously as DSA. I had 14 LP stories mapped to all 16 LPs. That preparation alone set me apart.`,
+    tips: [
+      'Apply off-campus aggressively — LinkedIn Easy Apply, careers portals, referrals',
+      'Map your experiences to all 16 Amazon Leadership Principles with STAR format',
+      'Amazon loves Trees, Graphs, and DP — focus 60% of DSA time here',
+      'Have a GitHub with 2-3 solid projects — it comes up in HR rounds',
+      'Cgpa < 7? Make up for it with DSA + projects + communication skills',
+    ],
+    ctc: '₹24 LPA',
+    duration: '10 months prep',
+  },
+  {
+    id: 4,
+    name: 'Sneha Reddy',
+    college: 'IIT Hyderabad',
+    batch: '2023',
+    company: 'Flipkart',
+    role: 'SDE-1 → SDE-2 (promoted in 1 year)',
+    avatar: 'SR',
+    avatarGrad: 'from-yellow-400 to-orange-400',
+    companyColor: '#F7BE00',
+    companyBg: 'rgba(247,190,0,0.12)',
+    companyBorder: 'rgba(247,190,0,0.25)',
+    tagline: 'Rejected by 6 big techs before Flipkart — best thing that happened',
+    story: `I got rejected by Google, Microsoft, Amazon, Uber, Swiggy, and Meesho before Flipkart. I'm not ashamed to say that anymore. Each rejection taught me something specific. After Amazon rejection (failed LP round), I rewrote all my stories. After Microsoft (failed system design), I spent 3 weeks doing nothing but system design.
+
+Flipkart's process was 5 rounds over 2 days. Machine coding round was brutal — they gave me 90 minutes to build a working parking lot system in Java. I barely finished but my code was clean and OOP was solid. That round is what got me the offer.`,
+    tips: [
+      'Machine coding rounds: practice LLD in actual IDEs, not just on paper',
+      'Rejections aren\'t stop signs — do a detailed debrief and fix the gap',
+      'Strong DSA + weak LLD is very common — don\'t ignore design rounds',
+      'Core subjects (DBMS, OS) are still tested in product companies — revise them',
+      'Your first offer is rarely your best — keep grinding even after one offer',
+    ],
+    ctc: '₹22 LPA',
+    duration: '12 months prep',
+  },
+  {
+    id: 5,
+    name: 'Karthik Iyer',
+    college: 'PSG College of Technology',
+    batch: '2024',
+    company: 'Razorpay',
+    role: 'SDE-1, Bangalore (Fintech)',
+    avatar: 'KI',
+    avatarGrad: 'from-emerald-500 to-teal-400',
+    companyColor: '#2EB5C9',
+    companyBg: 'rgba(46,181,201,0.12)',
+    companyBorder: 'rgba(46,181,201,0.25)',
+    tagline: 'Skipped FAANG rat race — targeted product startups strategically',
+    story: `I made a deliberate choice not to chase FAANG. I wanted fast growth, ownership, and good pay without the 2-year grind that top companies demand. I targeted Series B–D startups: Razorpay, Zepto, CRED, and Groww. Got offers from all four.
+
+Razorpay's process had a take-home assignment (build a payment link system in 3 hours), then 2 technical rounds heavily focused on that assignment. They cared less about classic LeetCode grinding and more about system thinking, code quality, and how you handle edge cases. I spent 4 hours on that assignment and it showed.`,
+    tips: [
+      'Product startups care about code quality and system thinking over raw DSA',
+      'Take-home assignments: treat them like production code — clean, tested, documented',
+      'Research the company\'s tech stack deeply — mention it in interviews',
+      'Targeting 10-15 companies strategically beats applying to 100 randomly',
+      'Negotiate hard — startup offers are often 20-30% negotiable at offer stage',
+    ],
+    ctc: '₹18 LPA + ESOPs',
+    duration: '5 months prep',
   },
 ]
 
@@ -638,8 +773,143 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
+        {/* ── Interview Stories ──────────────────────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.42, duration: 0.5 }}>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'linear-gradient(135deg, #F59E0B, #EF4444)' }}>
+              <Quote size={15} className="text-white" />
+            </div>
+            <div>
+              <h2 className="font-heading font-bold text-white text-xl">Interview Stories</h2>
+              <p className="text-white/55 text-xs font-body mt-0.5">Real experiences from students who cracked top companies</p>
+            </div>
+          </div>
+          <div className="flex-1 h-px mb-6" style={{ background: 'linear-gradient(90deg, rgba(245,158,11,0.3) 0%, transparent 100%)' }} />
+
+          <div className="space-y-4">
+            {STORIES.map((s, i) => (
+              <StoryCard key={s.id} story={s} index={i} />
+            ))}
+          </div>
+        </motion.div>
+
       </main>
     </div>
+  )
+}
+
+// ─── Story Card ───────────────────────────────────────────────────────────────
+function StoryCard({ story, index }: { story: typeof STORIES[0]; index: number }) {
+  const [expanded, setExpanded] = useState(false)
+  const paragraphs = story.story.trim().split('\n\n')
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.44 + index * 0.07, duration: 0.38 }}
+      className="rounded-2xl border overflow-hidden"
+      style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}
+    >
+      {/* ── Card header (always visible) ── */}
+      <div className="p-5">
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div className={`shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${story.avatarGrad} flex items-center justify-center font-heading font-bold text-white text-sm`}>
+            {story.avatar}
+          </div>
+
+          {/* Name + meta */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-heading font-bold text-white text-base">{story.name}</span>
+              <span className="text-white/35 text-xs font-body">{story.college} · {story.batch}</span>
+            </div>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-xs font-body px-2.5 py-0.5 rounded-full border font-semibold"
+                style={{ background: story.companyBg, borderColor: story.companyBorder, color: story.companyColor }}>
+                <Building2 size={9} className="inline mr-1 mb-0.5" />{story.company}
+              </span>
+              <span className="text-white/55 text-xs font-body">{story.role}</span>
+            </div>
+          </div>
+
+          {/* CTC badge */}
+          <div className="shrink-0 text-right hidden sm:block">
+            <p className="font-heading font-bold text-emerald-400 text-sm">{story.ctc}</p>
+            <p className="text-white/35 text-[10px] font-body">{story.duration}</p>
+          </div>
+        </div>
+
+        {/* Tagline quote */}
+        <div className="mt-4 flex gap-2.5">
+          <Quote size={14} className="shrink-0 mt-0.5 opacity-40" style={{ color: story.companyColor }} />
+          <p className="text-white/85 text-sm font-body italic leading-relaxed">{story.tagline}</p>
+        </div>
+
+        {/* Expand toggle */}
+        <button
+          onClick={() => setExpanded(v => !v)}
+          className="mt-4 flex items-center gap-1.5 text-xs font-body transition-colors"
+          style={{ color: expanded ? 'rgba(255,255,255,0.5)' : story.companyColor }}
+        >
+          {expanded ? <><ChevronUp size={13} /> Hide story</> : <><ChevronDown size={13} /> Read full story & tips</>}
+        </button>
+      </div>
+
+      {/* ── Expanded content ── */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.2, 0.7, 0.4, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 space-y-5"
+              style={{ borderTop: `1px solid rgba(255,255,255,0.06)` }}>
+
+              {/* Story paragraphs */}
+              <div className="pt-4 space-y-3">
+                {paragraphs.map((para, pi) => (
+                  <p key={pi} className="text-white/75 text-sm font-body leading-relaxed">{para}</p>
+                ))}
+              </div>
+
+              {/* Tips */}
+              <div className="rounded-xl p-4 border"
+                style={{ background: story.companyBg, borderColor: story.companyBorder }}>
+                <p className="text-xs font-heading font-bold mb-3 uppercase tracking-wider"
+                  style={{ color: story.companyColor }}>
+                  Top Tips from {story.name.split(' ')[0]}
+                </p>
+                <ul className="space-y-2">
+                  {story.tips.map((tip, ti) => (
+                    <li key={ti} className="flex items-start gap-2.5 text-sm font-body text-white/85">
+                      <span className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5"
+                        style={{ background: story.companyBg, border: `1px solid ${story.companyBorder}`, color: story.companyColor }}>
+                        {ti + 1}
+                      </span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between">
+                <p className="text-white/35 text-[11px] font-body">Verified story · PathForge community</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-heading font-bold text-emerald-400 text-sm sm:hidden">{story.ctc}</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
 
