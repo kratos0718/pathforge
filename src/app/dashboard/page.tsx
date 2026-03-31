@@ -380,9 +380,15 @@ export default function DashboardPage() {
           style={{ background: 'rgba(12,12,24,0.85)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}>
 
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #7C3AED 100%)' }}>
-              <Sparkles size={14} className="text-white" />
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
+              style={{ background: '#12102A', border: '1px solid rgba(124,58,237,0.35)' }}>
+              <svg width="20" height="20" viewBox="0 0 90 90" fill="none">
+                <polygon points="45,14 58,32 52,32 52,45 62,45 62,55 52,55 52,76 45,76 45,55 38,55 38,45 48,45 48,32 38,32" fill="#7C3AED"/>
+                <path d="M30 52 C24 46 24 32 34 26" stroke="#C4B5FD" strokeWidth="5" strokeLinecap="round"/>
+                <circle cx="30" cy="54" r="5" fill="#8B5CF6"/>
+                <circle cx="45" cy="14" r="4" fill="#F59E0B"/>
+                <circle cx="62" cy="45" r="3" fill="#06B6D4"/>
+              </svg>
             </div>
             <span className="font-heading font-extrabold text-white tracking-tight text-lg">PathForge</span>
             {user?.tier === 'premium' && (
