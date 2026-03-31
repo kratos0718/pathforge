@@ -7,7 +7,7 @@ import {
   Flame, Zap, LogOut, Bell, Trophy, Crown,
   CheckCircle2, Clock, Target, GraduationCap, ShieldCheck,
   TrendingUp, ArrowRight, Plus, RotateCcw, Sparkles, ArrowUpRight,
-  Quote, ChevronDown, ChevronUp, Building2,
+  Quote, ChevronDown, ChevronUp, Building2, AlertCircle,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { DailyTask } from '@/app/api/tasks/today/route'
@@ -74,6 +74,12 @@ const MODULES = [
     href: '/subjects',
     from: '#0891B2', to: '#22D3EE', shadow: 'rgba(8,145,178,0.35)',
     text: 'text-cyan-100',
+  },
+  {
+    icon: Building2, title: 'Company Intel', desc: 'Target company roadmap, past questions & gaps',
+    href: '/company',
+    from: '#7C3AED', to: '#DB2777', shadow: 'rgba(124,58,237,0.35)',
+    text: 'text-purple-100',
   },
 ]
 
@@ -732,6 +738,12 @@ export default function DashboardPage() {
 
             {/* Weekly check-in */}
             <CheckinPanel />
+
+            {/* Accountability Buddy */}
+            <AccountabilityBuddy streak={user?.streak ?? 0} doneToday={doneCount > 0} />
+
+            {/* Profile Updater */}
+            <ProfileUpdater targetRole={user?.target_role ?? ''} xp={user?.xp ?? 0} />
           </motion.div>
         </div>
 
@@ -910,6 +922,195 @@ function StoryCard({ story, index }: { story: typeof STORIES[0]; index: number }
         )}
       </AnimatePresence>
     </motion.div>
+  )
+}
+
+// ─── Accountability Buddy ─────────────────────────────────────────────────────
+function AccountabilityBuddy({ streak, doneToday }: { streak: number; doneToday: boolean }) {
+  const [buddy, setBuddy] = useState<string | null>(null)
+  const [inputting, setInputting] = useState(false)
+  const [val, setVal] = useState('')
+  const hour = new Date().getHours()
+  const missedToday = !doneToday && hour >= 18
+
+  useEffect(() => { setBuddy(localStorage.getItem('pf_buddy_name')) }, [])
+
+  function saveBuddy() {
+    if (!val.trim()) return
+    localStorage.setItem('pf_buddy_name', val.trim())
+    setBuddy(val.trim())
+    setInputting(false)
+    setVal('')
+  }
+
+  return (
+    <div className="rounded-2xl p-4 border border-white/8 space-y-3"
+      style={{ background: 'rgba(255,255,255,0.03)' }}>
+      {/* Missed-day nudge */}
+      <AnimatePresence>
+        {missedToday && (
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="flex items-start gap-2.5 p-3 rounded-xl border"
+            style={{ background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.2)' }}>
+            <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-heading font-semibold text-red-400">No activity today yet!</p>
+              <p className="text-[11px] text-red-400/70 font-body mt-0.5">Complete at least 1 task to keep your streak alive.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+          style={{ background: 'linear-gradient(135deg, #DB2777, #7C3AED)' }}>
+          <Users size={12} className="text-white" />
+        </div>
+        <span className="text-sm font-heading font-semibold text-white/90">Accountability Buddy</span>
+      </div>
+
+      {buddy ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl"
+            style={{ background: 'rgba(255,255,255,0.04)' }}>
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center font-heading font-bold text-xs text-white">
+              {buddy[0].toUpperCase()}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-heading font-semibold text-white">{buddy}</p>
+              <p className="text-[10px] text-white/40 font-body">Your prep partner</p>
+            </div>
+            <div className={`w-2 h-2 rounded-full ${doneToday ? 'bg-emerald-400' : 'bg-white/20'}`} title={doneToday ? 'Active today' : 'Not active yet'} />
+          </div>
+          <p className="text-[11px] text-white/45 font-body px-1">
+            {doneToday
+              ? `Great work today! Share your progress with ${buddy}.`
+              : `${buddy} is waiting — complete a task and let them know!`}
+          </p>
+          <button onClick={() => { localStorage.removeItem('pf_buddy_name'); setBuddy(null) }}
+            className="text-[10px] text-white/25 hover:text-white/50 font-body transition-colors">
+            Change buddy
+          </button>
+        </div>
+      ) : inputting ? (
+        <div className="flex gap-2">
+          <input autoFocus value={val} onChange={e => setVal(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') saveBuddy(); if (e.key === 'Escape') setInputting(false) }}
+            placeholder="Buddy's name..."
+            className="flex-1 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none border border-white/10 focus:border-violet-500/50 font-body"
+            style={{ background: 'rgba(255,255,255,0.05)' }} />
+          <button onClick={saveBuddy}
+            className="px-3 py-2 rounded-lg text-white text-xs font-heading"
+            style={{ background: 'linear-gradient(135deg, #DB2777, #7C3AED)' }}>
+            Save
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-xs text-white/55 font-body leading-relaxed">
+            Add a prep partner who holds you accountable. Research shows accountability partners increase study consistency by 65%.
+          </p>
+          <button onClick={() => setInputting(true)}
+            className="text-xs flex items-center gap-1.5 font-body text-violet-400 hover:text-violet-300 transition-colors">
+            <Plus size={11} /> Add accountability buddy
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Profile Updater ──────────────────────────────────────────────────────────
+function ProfileUpdater({ targetRole, xp }: { targetRole: string; xp: number }) {
+  const [dismissed, setDismissed] = useState<string[]>([])
+  const level = Math.floor(xp / 500) + 1
+
+  useEffect(() => {
+    const d = JSON.parse(localStorage.getItem('pf_profile_dismissed') ?? '[]')
+    setDismissed(d)
+  }, [])
+
+  function dismiss(id: string) {
+    const next = [...dismissed, id]
+    setDismissed(next)
+    localStorage.setItem('pf_profile_dismissed', JSON.stringify(next))
+  }
+
+  // Dynamic suggestions based on level/role
+  const suggestions = [
+    level >= 2 && {
+      id: 'linkedin-dsa',
+      icon: '💼',
+      title: 'Update LinkedIn',
+      desc: 'You\'ve been active on DSA — add "Data Structures & Algorithms" to your LinkedIn skills.',
+      action: 'Add to LinkedIn →',
+      link: 'https://www.linkedin.com/in/me/edit/skills/',
+      color: '#0A66C2',
+    },
+    level >= 3 && {
+      id: 'resume-role',
+      icon: '📄',
+      title: 'Resume Tip',
+      desc: `Targeting ${targetRole || 'SDE'}? Add a "Target Role" headline to your resume: "${targetRole || 'Software Development Engineer'} | CSE 20XX"`,
+      action: null,
+      link: null,
+      color: '#7C3AED',
+    },
+    level >= 4 && {
+      id: 'linkedin-project',
+      icon: '🚀',
+      title: 'Showcase a project',
+      desc: 'At Level 4+, you\'re ready to feature a project on LinkedIn. Add a post: "Built X using Y — here\'s what I learned."',
+      action: 'Post on LinkedIn →',
+      link: 'https://www.linkedin.com/feed/',
+      color: '#0A66C2',
+    },
+  ].filter(Boolean).filter(s => s && !dismissed.includes(s.id)) as { id: string; icon: string; title: string; desc: string; action: string | null; link: string | null; color: string }[]
+
+  if (suggestions.length === 0) return null
+
+  return (
+    <div className="rounded-2xl p-4 border border-white/8 space-y-3"
+      style={{ background: 'rgba(255,255,255,0.03)' }}>
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+          style={{ background: 'linear-gradient(135deg, #0EA5E9, #059669)' }}>
+          <TrendingUp size={12} className="text-white" />
+        </div>
+        <span className="text-sm font-heading font-semibold text-white/90">Profile Updater</span>
+        <span className="ml-auto text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-1.5 py-0.5 rounded-full font-body">
+          {suggestions.length} tip{suggestions.length > 1 ? 's' : ''}
+        </span>
+      </div>
+
+      <div className="space-y-2.5">
+        {suggestions.map(s => (
+          <div key={s.id} className="p-3 rounded-xl border"
+            style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.06)' }}>
+            <div className="flex items-start gap-2.5">
+              <span className="text-base shrink-0">{s.icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-heading font-semibold text-white/90">{s.title}</p>
+                <p className="text-[11px] text-white/60 font-body mt-0.5 leading-relaxed">{s.desc}</p>
+                <div className="flex items-center gap-3 mt-2">
+                  {s.action && s.link && (
+                    <a href={s.link} target="_blank" rel="noopener noreferrer"
+                      className="text-[11px] font-body font-semibold transition-colors hover:opacity-80"
+                      style={{ color: s.color }}>
+                      {s.action}
+                    </a>
+                  )}
+                  <button onClick={() => dismiss(s.id)}
+                    className="text-[10px] text-white/25 hover:text-white/50 font-body transition-colors">
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
