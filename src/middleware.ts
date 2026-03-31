@@ -1,43 +1,38 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function middleware(req: NextRequest) {
-  let res = NextResponse.next({ request: req })
+// No Supabase client in middleware — avoids 504 gateway timeout on Vercel Edge.
+// Auth cookies are checked directly (no network round-trip).
+// Full token validation happens inside each page/API route via Supabase client.
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return req.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value))
-          res = NextResponse.next({ request: req })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            res.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
+function hasSupabaseSession(req: NextRequest): boolean {
+  const cookies = req.cookies.getAll()
+  // Supabase SSR stores session in cookies named sb-<project-ref>-auth-token (chunked or single)
+  return cookies.some(
+    (c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token')
   )
+}
 
-  const { data: { user } } = await supabase.auth.getUser()
+export function middleware(req: NextRequest) {
+  const isAuthed = hasSupabaseSession(req)
+  const { pathname } = req.nextUrl
 
-  const protectedPaths = ['/dashboard', '/onboarding', '/roadmap', '/dsa', '/cgpa', '/courses', '/friends', '/challenges']
-  const isProtected = protectedPaths.some((path) => req.nextUrl.pathname.startsWith(path))
+  const protectedPaths = [
+    '/dashboard', '/onboarding', '/roadmap', '/dsa', '/cgpa',
+    '/courses', '/friends', '/challenges', '/compass', '/score',
+    '/upgrade', '/admin',
+  ]
+  const isProtected = protectedPaths.some((p) => pathname.startsWith(p))
 
-  if (!user && isProtected) {
+  if (!isAuthed && isProtected) {
     return NextResponse.redirect(new URL('/auth', req.url))
   }
 
-  if (user && req.nextUrl.pathname === '/auth') {
+  if (isAuthed && pathname === '/auth') {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
-  return res
+  return NextResponse.next()
 }
 
 export const config = {
