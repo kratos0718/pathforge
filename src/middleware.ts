@@ -7,9 +7,12 @@ import type { NextRequest } from 'next/server'
 
 function hasSupabaseSession(req: NextRequest): boolean {
   const cookies = req.cookies.getAll()
-  // Supabase SSR stores session in cookies named sb-<project-ref>-auth-token (chunked or single)
+  // Supabase SSR stores session as:
+  //   sb-<ref>-auth-token          (small tokens — email/password)
+  //   sb-<ref>-auth-token.0/.1/... (chunked — Google OAuth tokens are large)
+  // Check for either form with includes() so both are detected.
   return cookies.some(
-    (c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token')
+    (c) => c.name.startsWith('sb-') && c.name.includes('-auth-token')
   )
 }
 
