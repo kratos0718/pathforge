@@ -104,6 +104,7 @@ function getRoleTask(role: string, xp: number): DailyTask | null {
 // ─── API Route ────────────────────────────────────────────────────────────────
 
 export async function GET() {
+  try {
   // Verify caller
   const cookieStore = cookies()
   const userClient = createServerClient(
@@ -230,4 +231,8 @@ export async function GET() {
     streak: profile.streak ?? 0,
     xp: profile.xp ?? 0,
   })
+  } catch (err) {
+    console.error('[/api/tasks/today]', err)
+    return NextResponse.json({ error: 'Failed to load tasks' }, { status: 500 })
+  }
 }
