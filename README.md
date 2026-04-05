@@ -6,7 +6,7 @@
 
 **The all-in-one placement preparation platform for CSE students in India**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-pathforge--hazel.vercel.app-7C3AED?style=for-the-badge&logo=vercel&logoColor=white)](https://pathforge-hazel.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-pathforge--hazel.vercel.app-7C3AED?style=for-the-badge&logo=vercel&logoColor=white)](https://pathforge.online)
 [![Next.js](https://img.shields.io/badge/Next.js%2014-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
@@ -27,7 +27,7 @@ Most students waste months jumping between random YouTube playlists, LeetCode pr
 
 ## Live Demo
 
-🔗 **[pathforge-hazel.vercel.app](https://pathforge-hazel.vercel.app)**
+🔗 **[pathforge.online](https://pathforge.online)**
 
 Sign in with Google or use the guest account to explore the full platform.
 
@@ -312,6 +312,6 @@ MIT — free to use, modify, and distribute.
 
 Built with ❤️ for every CSE student grinding for their dream placement.
 
-**[Try PathForge →](https://pathforge-hazel.vercel.app)**
+**[Try PathForge →](https://pathforge.online)**
 
 </div>

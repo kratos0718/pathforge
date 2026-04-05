@@ -71,7 +71,7 @@ export default function TermsPage() {
           <h2 className="font-heading font-bold text-white text-xl">11. Contact Us</h2>
           <p className="text-white/70 leading-relaxed">
             Email: <a href="mailto:support@pathforge.dev" className="text-violet-400 hover:text-violet-300">support@pathforge.dev</a><br />
-            Website: <a href="https://pathforge-hazel.vercel.app" className="text-violet-400 hover:text-violet-300">https://pathforge-hazel.vercel.app</a>
+            Website: <a href="https://pathforge.online" className="text-violet-400 hover:text-violet-300">https://pathforge.online</a>
           </p>
         </section>
       </main>
