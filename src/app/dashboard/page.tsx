@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { DailyTask } from '@/app/api/tasks/today/route'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface UserProfile {
@@ -281,24 +282,58 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function init() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { window.location.href = '/auth'; return }
-      setUserId(session.user.id)
-      setUserEmail(session.user.email ?? '')
-      setAvatarUrl(session.user.user_metadata?.avatar_url ?? '')
-      loadCompleted(session.user.id)
-      const { data } = await supabase.from('users')
-        .select('name, target_role, semester, college, xp, streak, tier')
-        .eq('id', session.user.id).single()
-      setUser(data)
-      setLoading(false)
-      const tok = session.access_token
-      fetch('/api/tasks/today').then(r => r.json()).then(d => { if (d.tasks) setTasks(d.tasks) }).finally(() => setTasksLoading(false))
-      Promise.allSettled([
-        fetch(`${BACKEND}/dsa/stats`, { headers: { Authorization: `Bearer ${tok}` } }).then(r => r.json()).then(d => setDsaSolved(d.total_solved ?? 0)),
-        fetch(`${BACKEND}/score/calculate`, { method: 'POST', headers: { Authorization: `Bearer ${tok}` } }).then(r => r.json()).then(d => { if (d.score !== undefined) setReadinessScore(d.score) }),
-        supabase.from('notifications').select('*').eq('user_id', session.user.id).eq('read', false).order('created_at', { ascending: false }).limit(10).then(({ data: n }) => { if (n) setNotifications(n) }),
-      ])
+      try {
+        const { data: { session }, error: sessionErr } = await supabase.auth.getSession()
+        if (sessionErr) throw sessionErr
+        if (!session) { window.location.href = '/auth'; return }
+
+        setUserId(session.user.id)
+        setUserEmail(session.user.email ?? '')
+        setAvatarUrl(session.user.user_metadata?.avatar_url ?? '')
+        loadCompleted(session.user.id)
+
+        const { data, error: profileErr } = await supabase.from('users')
+          .select('name, target_role, semester, college, xp, streak, tier')
+          .eq('id', session.user.id).single()
+        if (profileErr) console.error('[Dashboard:profile]', profileErr.message)
+        setUser(data)
+        setLoading(false)
+
+        // Non-critical fetches — all isolated so one failure doesn't block others
+        const tok = session.access_token
+
+        // Tasks — with timeout + graceful fallback
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), 8000)
+        fetch('/api/tasks/today', { signal: controller.signal })
+          .then(r => r.ok ? r.json() : Promise.reject(r.status))
+          .then(d => { if (d.tasks) setTasks(d.tasks) })
+          .catch(e => console.error('[Dashboard:tasks]', e))
+          .finally(() => { clearTimeout(timer); setTasksLoading(false) })
+
+        // DSA stats + readiness + notifications — all best-effort
+        Promise.allSettled([
+          fetch(`${BACKEND}/dsa/stats`, { headers: { Authorization: `Bearer ${tok}` }, signal: AbortSignal.timeout?.(8000) })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(d => setDsaSolved(d.total_solved ?? 0))
+            .catch(() => { /* backend offline — skip silently */ }),
+
+          fetch(`${BACKEND}/score/calculate`, { method: 'POST', headers: { Authorization: `Bearer ${tok}` }, signal: AbortSignal.timeout?.(8000) })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(d => { if (d.score !== undefined) setReadinessScore(d.score) })
+            .catch(() => { /* backend offline — skip silently */ }),
+
+          Promise.resolve(
+            supabase.from('notifications').select('*')
+              .eq('user_id', session.user.id).eq('read', false)
+              .order('created_at', { ascending: false }).limit(10)
+          ).then(({ data: n }) => { if (n) setNotifications(n) })
+           .catch(() => { /* notifications unavailable — skip silently */ }),
+        ])
+      } catch (err) {
+        console.error('[Dashboard:init]', err)
+        setLoading(false) // unblock UI even on total failure
+      }
     }
     init()
   }, [loadCompleted, BACKEND])
@@ -327,14 +362,9 @@ export default function DashboardPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1A0B2E 0%, #0D1B3E 50%, #1A0B2E 100%)' }}>
-      <div className="flex gap-2">
-        {[0, 120, 240].map(d => (
-          <motion.span key={d} className="w-2.5 h-2.5 rounded-full"
-            style={{ background: d === 0 ? '#FF6B35' : d === 120 ? '#7C3AED' : '#0EA5E9' }}
-            animate={{ y: [0, -10, 0], scale: [1, 1.2, 1] }}
-            transition={{ duration: 0.8, delay: d / 1000, repeat: Infinity, ease: 'easeInOut' }} />
-        ))}
+    <div className="min-h-screen page-bg">
+      <div className="max-w-6xl mx-auto px-4 py-24">
+        <DashboardSkeleton />
       </div>
     </div>
   )
