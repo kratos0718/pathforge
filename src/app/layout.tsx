@@ -15,8 +15,78 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PathForge — Your AI Career OS",
-  description: "Personalised AI-powered placement roadmap for CSE students in India",
+  // ── Core ────────────────────────────────────────────────────────────────────
+  title: {
+    default: "PathForge — AI-Powered Placement Prep for CSE Students",
+    template: "%s | PathForge",
+  },
+  description:
+    "PathForge is India's #1 AI placement preparation platform for CSE students. Get a personalised 16-week roadmap, track DSA progress (Striver A2Z), calculate your readiness score, and crack your dream company. Founded by Abhinav.",
+  keywords: [
+    "PathForge",
+    "pathforge placement prep",
+    "pathforge AI roadmap",
+    "placement preparation for CSE students India",
+    "AI roadmap for engineering students",
+    "DSA tracker India",
+    "Striver A2Z tracker",
+    "CGPA calculator company cutoff",
+    "campus placement preparation",
+    "software engineering placement",
+    "CSE placement app",
+    "AI career roadmap India",
+    "placement readiness score",
+  ],
+  authors: [{ name: "Abhinav", url: "https://pathforge.online" }],
+  creator: "Abhinav",
+  publisher: "PathForge",
+  category: "Education",
+
+  // ── Canonical + robots ───────────────────────────────────────────────────────
+  metadataBase: new URL("https://pathforge.online"),
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  // ── Open Graph ───────────────────────────────────────────────────────────────
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://pathforge.online",
+    siteName: "PathForge",
+    title: "PathForge — AI-Powered Placement Prep for CSE Students",
+    description:
+      "Personalised 16-week AI roadmap, DSA tracker, readiness score, and daily tasks for CSE students targeting product companies. Built for India.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "PathForge — AI Placement Prep Platform",
+      },
+    ],
+  },
+
+  // ── Twitter / X ──────────────────────────────────────────────────────────────
+  twitter: {
+    card: "summary_large_image",
+    title: "PathForge — AI-Powered Placement Prep for CSE Students",
+    description:
+      "Personalised 16-week AI roadmap, DSA tracker, readiness score, and daily tasks for CSE students targeting product companies.",
+    images: ["/og-image.png"],
+    creator: "@pathforge",
+  },
+
+  // ── PWA ──────────────────────────────────────────────────────────────────────
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
