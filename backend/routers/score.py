@@ -73,8 +73,11 @@ def calculate_readiness_score(payload: dict = Depends(verify_token)):
         "calculated_at": datetime.now(timezone.utc).isoformat(),
     }
 
-    # Persist
-    supabase.table("readiness_scores").insert(score_record).execute()
+    # Upsert — one row per user, updated in place (prevents unbounded table growth)
+    supabase.table("readiness_scores").upsert(
+        score_record,
+        on_conflict="user_id"
+    ).execute()
 
     return score_record
 
