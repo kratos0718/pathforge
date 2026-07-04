@@ -136,6 +136,31 @@ function AuthInner() {
           </CardHeader>
 
           <CardContent className="space-y-4">
+            {/* Try Demo — prominent entry point for recruiters & interviewers */}
+            <Button
+              onClick={handleGuestAuth}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-purple-900/40 transition-all"
+            >
+              <svg className="w-4 h-4 mr-2 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 0 1 0 .656l-5.603 3.113a.375.375 0 0 1-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              {loading ? 'Loading demo…' : 'Try Demo — No signup needed'}
+            </Button>
+            <p className="text-center text-xs text-white/35 -mt-1">
+              Explore the full app instantly · perfect for recruiters & interviewers
+            </p>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-700" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-slate-900 px-2 text-slate-500">or sign in</span>
+              </div>
+            </div>
+
             {/* Google */}
             <Button
               onClick={handleGoogleAuth}
@@ -149,19 +174,6 @@ function AuthInner() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
               Continue with Google
-            </Button>
-
-            {/* Guest */}
-            <Button
-              onClick={handleGuestAuth}
-              disabled={loading}
-              variant="outline"
-              className="w-full bg-white/3 border-white/10 text-white/50 hover:bg-white/8 hover:border-white/20 hover:text-white/70 transition-all"
-            >
-              <svg className="w-4 h-4 mr-2 shrink-0 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-              </svg>
-              Continue as Guest
             </Button>
 
             <div className="relative">
