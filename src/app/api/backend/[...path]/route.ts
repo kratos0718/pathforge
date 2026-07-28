@@ -443,20 +443,24 @@ async function listSemesters(db: ReturnType<typeof admin>, userId: string) {
   const bySem: Record<string, Record<string, unknown>[]> = {}
   for (const sub of subjects) (bySem[sub.semester_id] ??= []).push(sub)
   return ok(semesters.map((s) => ({
-    ...s, subjects: bySem[s.id] ?? [],
+    ...s,
+    number: s.semester_number, // the frontend Semester type uses `number`
+    subjects: bySem[s.id] ?? [],
     sgpa: computeGpa((bySem[s.id] ?? []) as { credits: number; grade_points: number | null }[]),
   })))
 }
 
 async function addSemester(db: ReturnType<typeof admin>, userId: string, body: Body) {
-  const number = Number(body.semester_number)
+  // Frontend sends `number`; DB column is `semester_number`.
+  const number = Number(body.number ?? body.semester_number)
   const year = Number(body.year)
+  if (!Number.isFinite(number) || !Number.isFinite(year)) return badRequest('Invalid semester number or year')
   const existing = (await db.from('semesters').select('id')
     .eq('user_id', userId).eq('semester_number', number)).data
   if (existing?.length) return NextResponse.json({ detail: `Semester ${number} already exists` }, { status: 409 })
   const res = await db.from('semesters').insert({ user_id: userId, semester_number: number, year }).select().single()
   if (!res.data) return serverError('Failed to create semester')
-  return NextResponse.json(res.data, { status: 201 })
+  return NextResponse.json({ ...res.data, number: res.data.semester_number, subjects: [] }, { status: 201 })
 }
 
 async function deleteSemester(db: ReturnType<typeof admin>, userId: string, semesterId: string) {
@@ -555,6 +559,9 @@ async function simulateCgpa(db: ReturnType<typeof admin>, userId: string, body: 
     if (s.grade_points != null) { knownWeighted += s.credits * s.grade_points; knownCredits += s.credits }
     else unknownCredits += s.credits
   }
+  // The UI only sends a target CGPA (no per-subject plan) — assume a typical
+  // upcoming semester load so we can still answer "what average do you need?".
+  if (current.length === 0) unknownCredits = 22
   const allCredits = pastCredits + knownCredits + unknownCredits
   if (allCredits === 0) return ok({ needed_grade_points: null, achievable: false, message: 'No subjects found — cannot simulate.' })
   if (unknownCredits === 0) {
@@ -783,7 +790,8 @@ async function challengeProgress(db: ReturnType<typeof admin>, userId: string, t
 }
 
 async function createChallenge(db: ReturnType<typeof admin>, userId: string, body: Body) {
-  const invited = (body.invite_user_ids as string[]) ?? []
+  // Frontend sends `invited_user_ids`; the old Python used `invite_user_ids`.
+  const invited = (body.invited_user_ids as string[]) ?? (body.invite_user_ids as string[]) ?? []
   const ch = await db.from('challenges').insert({
     creator_id: userId, title: String(body.title ?? ''), type: String(body.type ?? 'dsa_count'),
     goal_value: Number(body.goal_value ?? 0), deadline: body.deadline, status: 'active',
@@ -810,13 +818,22 @@ async function activeChallenges(db: ReturnType<typeof admin>, userId: string) {
     const parts = (await db.from('challenge_participants')
       .select('user_id, progress, completed, users!challenge_participants_user_id_fkey(name, xp)')
       .eq('challenge_id', ch.id)).data ?? []
+    // Flat shape: each item IS the challenge, with a participants array — matches
+    // the frontend Challenge interface (reads c.title / c.type / c.participants).
     result.push({
-      challenge: ch,
+      ...ch,
+      my_progress: myProgress[ch.id]?.progress ?? 0,
       participants: parts.map((p) => {
         const u = (p.users ?? {}) as { name?: string; xp?: number }
-        return { user_id: p.user_id, progress: p.progress, completed: p.completed, name: u.name, xp: u.xp }
+        return {
+          user_id: p.user_id,
+          name: u.name ?? 'You',
+          progress: p.progress ?? 0,
+          completed: p.completed ?? false,
+          xp: u.xp ?? 0,
+          is_current_user: p.user_id === userId,
+        }
       }),
-      my_progress: myProgress[ch.id]?.progress ?? 0,
     })
   }
   return ok(result)
