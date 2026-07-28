@@ -7,7 +7,7 @@
  */
 import { NextResponse } from 'next/server'
 import {
-  admin, getUserId, ok, unauthorized, badRequest, notFound, serverError,
+  admin, resolveAuth, ok, unauthorized, badRequest, notFound, serverError,
   awardXp, logActivity,
 } from '@/lib/backend/client'
 import {
@@ -45,12 +45,12 @@ export async function DELETE(req: Request, { params }: { params: { path: string[
 // ─── Dispatcher ───────────────────────────────────────────────────────────────
 
 async function dispatch(method: string, req: Request, path: string[]) {
-  const userId = await getUserId(req)
-  if (!userId) return unauthorized()
+  const auth = await resolveAuth(req)
+  if (!auth) return unauthorized()
+  const { userId, db } = auth
 
   const p = path.filter(Boolean) // strip trailing empty segment
   const key = `${method} ${p.join('/')}`
-  const db = admin()
   const url = new URL(req.url)
 
   try {

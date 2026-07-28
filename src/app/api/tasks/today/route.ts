@@ -112,14 +112,20 @@ export async function GET() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
   )
-  const { data: { user } } = await userClient.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { data: { session } } = await userClient.auth.getSession()
+  const user = session?.user
+  if (!user || !session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY)!,
-    { auth: { persistSession: false } }
-  )
+  // Use the service-role key when configured, otherwise fall back to a client
+  // scoped to the caller's JWT — the "manage own data" RLS policies cover every
+  // read below, so the dashboard works with zero extra Vercel configuration.
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
+  const admin = serviceKey
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey, { auth: { persistSession: false } })
+    : createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+        auth: { persistSession: false },
+        global: { headers: { Authorization: `Bearer ${session.access_token}` } },
+      })
 
   // Fetch user profile + roadmap + dsa in parallel
   const [profileRes, roadmapRes, dsaRes, coursesRes] = await Promise.all([
