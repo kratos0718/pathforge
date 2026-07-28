@@ -49,13 +49,25 @@ function AuthInner() {
     setLoading(false)
   }
 
-  // Populate a fresh guest account with realistic demo data (best-effort).
+  // Reject a promise if it takes longer than `ms` — so the demo can never hang.
+  function withTimeout<T>(p: PromiseLike<T>, ms: number): Promise<T> {
+    return Promise.race([
+      Promise.resolve(p),
+      new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+    ])
+  }
+
+  // Populate a fresh guest account with realistic demo data (best-effort, capped).
   async function seedDemoData(accessToken: string) {
     try {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 9000)
       await fetch('/api/backend/demo/seed', {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}` },
+        signal: controller.signal,
       })
+      clearTimeout(timer)
     } catch { /* non-fatal — dashboard still loads */ }
   }
 
@@ -65,25 +77,32 @@ function AuthInner() {
 
     // 1. Try anonymous sign-in (works if enabled in Supabase dashboard)
     try {
-      const { data, error } = await supabase.auth.signInAnonymously()
+      const { data, error } = await withTimeout(supabase.auth.signInAnonymously(), 12000)
       if (!error && data.session) {
         await seedDemoData(data.session.access_token)
         window.location.href = '/dashboard'
         return
       }
-    } catch { /* anonymous auth disabled — fall through */ }
+    } catch { /* anonymous auth disabled or slow — fall through */ }
 
     // 2. Fallback: sign in as the seeded demo account
-    const { data, error: demoErr } = await supabase.auth.signInWithPassword({
-      email: 'rahul.sharma@dummy.pathforge.dev',
-      password: 'PathForge@123',
-    })
-    if (demoErr) {
-      setError('Guest access unavailable. Please create a free account — it only takes 30 seconds!')
-    } else if (data.session) {
-      await seedDemoData(data.session.access_token)
-      window.location.href = '/dashboard'
-    }
+    try {
+      const { data, error: demoErr } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email: 'rahul.sharma@dummy.pathforge.dev',
+          password: 'PathForge@123',
+        }),
+        12000,
+      )
+      if (!demoErr && data.session) {
+        await seedDemoData(data.session.access_token)
+        window.location.href = '/dashboard'
+        return
+      }
+    } catch { /* fall through to error */ }
+
+    // Both paths failed — never leave the button spinning.
+    setError('Guest access unavailable. Please enable Anonymous sign-ins in Supabase, or create a free account below.')
     setLoading(false)
   }
 
