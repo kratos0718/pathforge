@@ -6,8 +6,12 @@ const withPWA = withPWAInit({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === 'development',
+  // Take control as soon as a new service worker is deployed, so returning
+  // visitors get the latest version on their next load (no stale cache).
   workboxOptions: {
     disableDevLogs: true,
+    skipWaiting: true,
+    clientsClaim: true,
   },
 })
 
