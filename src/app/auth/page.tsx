@@ -85,7 +85,22 @@ function AuthInner() {
       }
     } catch { /* anonymous auth disabled or slow — fall through */ }
 
-    // 2. Fallback: sign in as the seeded demo account
+    // 2. Create a throwaway demo account (works even if anonymous is off, as long
+    //    as email confirmation is disabled — returns a session immediately).
+    try {
+      const rnd = Math.random().toString(36).slice(2, 12)
+      const { data, error } = await withTimeout(
+        supabase.auth.signUp({ email: `demo.${rnd}@pathforge.online`, password: `Demo!${rnd}Xy1` }),
+        12000,
+      )
+      if (!error && data.session) {
+        await seedDemoData(data.session.access_token)
+        window.location.href = '/dashboard'
+        return
+      }
+    } catch { /* email confirmation on, or slow — fall through */ }
+
+    // 3. Fallback: sign in as the pre-seeded demo account
     try {
       const { data, error: demoErr } = await withTimeout(
         supabase.auth.signInWithPassword({
