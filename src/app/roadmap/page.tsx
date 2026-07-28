@@ -24,7 +24,7 @@ interface Week {
   tasks: Task[]
 }
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+const BACKEND = '/api/backend'
 
 const TYPE_COLORS: Record<string, string> = {
   dsa:      'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -108,7 +108,7 @@ export default function RoadmapPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setGenerateError(data?.detail || `Server error ${res.status} — check backend logs`)
+        setGenerateError(data?.detail || 'Could not generate your roadmap right now. Please try again.')
       } else if (data.plan_id) {
         if (data.fallback_used) setRoadmapFallback(true)
         await loadPlan(token)
@@ -116,7 +116,7 @@ export default function RoadmapPage() {
         setGenerateError('Roadmap generated but plan ID missing — try again')
       }
     } catch {
-      setGenerateError('Cannot reach backend. Make sure it is running: cd backend && python main.py')
+      setGenerateError('Network hiccup while generating your roadmap. Please check your connection and try again.')
     }
     setGenerating(false)
   }

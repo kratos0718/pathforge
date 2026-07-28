@@ -19,7 +19,7 @@ interface CompassResult {
   traits: string[]
 }
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+const BACKEND = '/api/backend'
 
 export default function CompassPage() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -81,10 +81,10 @@ export default function CompassPage() {
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
         setTurn(data.turn || 0)
       } else {
-        setError('No response from AI. Check backend logs.')
+        setError('Hmm, no response just now. Please try again.')
       }
     } catch {
-      setError('Cannot reach backend. Make sure it is running: cd backend && python main.py')
+      setError('Network hiccup — please check your connection and try again.')
     }
     setLoading(false)
   }
@@ -117,7 +117,7 @@ export default function CompassPage() {
         setError('Roadmap saved but ID missing — try again')
       }
     } catch {
-      setError('Cannot reach backend. Make sure it is running: cd backend && python main.py')
+      setError('Network hiccup — please check your connection and try again.')
     }
     setLoading(false)
   }

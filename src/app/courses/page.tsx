@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+const BACKEND = '/api/backend'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -263,7 +263,7 @@ export default function CoursesPage() {
       }
     } catch {
       setCourses((prev) => prev.filter((c) => c.id !== tempId))
-      setAddError('Cannot reach backend. Make sure it is running: cd backend && python main.py')
+      setAddError('Network hiccup while adding your course. Please check your connection and try again.')
       setShowForm(true)
     }
     setSubmitting(false)
@@ -359,7 +359,7 @@ export default function CoursesPage() {
         setRagError('Could not fetch recommendations. Try again.')
       }
     } catch {
-      setRagError('Backend offline or network error.')
+      setRagError('Could not load recommendations right now. Please try again.')
     }
     setRagLoading(false)
   }

@@ -15,7 +15,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+const BACKEND = '/api/backend'
 const PAGE_SIZE = 20
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -628,12 +628,9 @@ export default function DSAPage() {
             {!loadingProblems && problems.length === 0 && (
               <div className="py-16 text-center space-y-3">
                 <div className="text-4xl">📭</div>
-                <p className="text-white/50 font-body text-sm">No problems loaded yet.</p>
+                <p className="text-white/50 font-body text-sm">No problems in this sheet yet.</p>
                 <p className="text-white/25 font-body text-xs">
-                  Run the seed script first:{' '}
-                  <code className="text-white/40 bg-white/5 px-2 py-0.5 rounded">
-                    cd backend && python seed_dsa.py
-                  </code>
+                  Pick another sheet or check back soon — new problem sets are added regularly.
                 </p>
               </div>
             )}

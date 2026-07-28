@@ -267,7 +267,7 @@ export default function DashboardPage() {
   const [readinessScore, setReadinessScore] = useState<number | null>(null)
   const [addingTask, setAddingTask] = useState(false)
   const [customTask, setCustomTask] = useState('')
-  const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+  const BACKEND = '/api/backend'
 
   const loadCompleted = useCallback((uid: string) => {
     try {
@@ -1274,7 +1274,7 @@ function ProfileUpdater({ targetRole, xp }: { targetRole: string; xp: number }) 
 
 // ─── Weekly Check-in Panel ────────────────────────────────────────────────────
 function CheckinPanel() {
-  const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+  const BACKEND = '/api/backend'
   const [step, setStep] = useState<'idle' | 'answering' | 'done'>('idle')
   const [loading, setLoading] = useState(false)
   const [questions, setQuestions] = useState<string[]>([])
