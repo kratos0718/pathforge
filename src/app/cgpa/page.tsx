@@ -25,7 +25,7 @@ import {
   Dot,
 } from 'recharts'
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+const BACKEND = '/api/backend'
 
 // Grade → grade points mapping
 const GRADE_POINTS: Record<string, number> = {

@@ -96,7 +96,7 @@ export async function backendFetch<T = unknown>(
   token: string,
   options: RequestInit & { timeoutMs?: number } = {}
 ): Promise<T> {
-  const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+  const BACKEND = '/api/backend'
   return apiFetch<T>(`${BACKEND}${path}`, {
     ...options,
     headers: {
