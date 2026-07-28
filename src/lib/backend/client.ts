@@ -1,9 +1,14 @@
 /**
  * client.ts — Shared helpers for the serverless backend routes.
  *
- * Auth model mirrors the retired FastAPI backend: validate the caller's Supabase
- * session (via Bearer token OR cookies), then run DB operations with a
- * service-role client (bypasses RLS, exactly like the Python `supabase` client).
+ * Auth model: validate the caller's Supabase session (Bearer token or cookies),
+ * then hand back a DB client scoped correctly for the environment:
+ *   - If a service-role key is configured, use it (full access, like the old
+ *     Python backend — needed for cross-user social features).
+ *   - Otherwise fall back to a client scoped to the caller's JWT, so every
+ *     "manage own data" RLS policy still lets the core app work with zero extra
+ *     configuration. This keeps the demo fully functional even if no service key
+ *     is set in Vercel.
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createServerClient } from '@supabase/ssr'
@@ -13,41 +18,71 @@ import { NextResponse } from 'next/server'
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 // Accept either env-var name so we don't depend on which one is set in Vercel.
-const SERVICE = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY)!
+const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
+
+/** True when a service-role key is available (enables cross-user reads). */
+export const hasServiceKey = Boolean(SERVICE)
 
 /** Service-role client — full DB access, no user session. */
 export function admin(): SupabaseClient {
-  return createClient(URL, SERVICE, { auth: { persistSession: false } })
+  return createClient(URL, SERVICE!, { auth: { persistSession: false } })
 }
 
-/** Resolve the authenticated user id from a Bearer token or session cookies. */
-export async function getUserId(req: Request): Promise<string | null> {
+/** A client scoped to a single user's JWT — RLS applies as that user. */
+function userScoped(token: string): SupabaseClient {
+  return createClient(URL, ANON, {
+    auth: { persistSession: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  })
+}
+
+export interface Auth {
+  userId: string
+  /** Service client when configured, else a JWT-scoped client. */
+  db: SupabaseClient
+}
+
+/**
+ * Resolve the authenticated user and an appropriate DB client from a request.
+ * Returns null when unauthenticated.
+ */
+export async function resolveAuth(req: Request): Promise<Auth | null> {
+  let token: string | null = null
+  let userId: string | null = null
+
   // 1. Authorization: Bearer <access_token>
   const authHeader = req.headers.get('authorization')
-  const token = authHeader && /^bearer /i.test(authHeader) ? authHeader.slice(7).trim() : null
-  if (token) {
+  if (authHeader && /^bearer /i.test(authHeader)) {
+    token = authHeader.slice(7).trim()
     try {
-      const anon = createClient(URL, ANON, { auth: { persistSession: false } })
-      const { data, error } = await anon.auth.getUser(token)
-      if (!error && data.user) return data.user.id
+      const { data, error } = await createClient(URL, ANON, { auth: { persistSession: false } }).auth.getUser(token)
+      if (!error && data.user) userId = data.user.id
     } catch {
       /* fall through to cookies */
     }
   }
 
   // 2. Session cookies (same-origin fetch sends these automatically)
-  try {
-    const cookieStore = cookies()
-    const ssr = createServerClient(URL, ANON, {
-      cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} },
-    })
-    const { data } = await ssr.auth.getUser()
-    if (data.user) return data.user.id
-  } catch {
-    /* unauthenticated */
+  if (!userId) {
+    try {
+      const cookieStore = cookies()
+      const ssr = createServerClient(URL, ANON, {
+        cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} },
+      })
+      const { data: { session } } = await ssr.auth.getSession()
+      if (session) {
+        userId = session.user.id
+        token = token ?? session.access_token
+      }
+    } catch {
+      /* unauthenticated */
+    }
   }
 
-  return null
+  if (!userId) return null
+
+  const db = SERVICE ? admin() : userScoped(token ?? '')
+  return { userId, db }
 }
 
 export const ok = (body: unknown) => NextResponse.json(body)
