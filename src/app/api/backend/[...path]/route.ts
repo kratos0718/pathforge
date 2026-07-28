@@ -55,6 +55,9 @@ async function dispatch(method: string, req: Request, path: string[]) {
 
   try {
     switch (true) {
+      // ── Demo seeding (populates a guest/anonymous account) ─────────────────
+      case key === 'POST demo/seed': return seedDemo(db, userId)
+
       // ── Roadmap + Compass ──────────────────────────────────────────────────
       case key === 'POST roadmap/compass': return compass(db, userId, await readBody(req))
       case key === 'POST roadmap/generate': return generateRoadmap(db, userId, await readBody(req))
@@ -133,6 +136,74 @@ async function dispatch(method: string, req: Request, path: string[]) {
     console.error(`[/api/backend] ${key}`, err)
     return serverError()
   }
+}
+
+// ═══ Demo seeding ═════════════════════════════════════════════════════════════
+
+/**
+ * Populate a guest/anonymous account with realistic data so recruiters land on a
+ * lively dashboard instead of an empty one. Idempotent — safe to call repeatedly.
+ */
+async function seedDemo(db: ReturnType<typeof admin>, userId: string) {
+  // 1. Rich profile (UPDATE the trigger-created row; keep existing email/name-required)
+  await db.from('users').update({
+    name: 'Aarav Sharma',
+    college: 'Demo Institute of Technology',
+    branch: 'CSE',
+    semester: 6,
+    target_role: 'SDE',
+    target_companies: ['Google', 'Microsoft', 'Amazon'],
+    current_skills: ['Python', 'C++', 'DSA', 'React'],
+    cgpa: 8.2,
+    college_tier: 'tier2',
+    xp: 1240,
+    streak: 12,
+    onboarding_complete: true,
+  }).eq('id', userId)
+
+  // 2. Seed courses (guarded — only if none exist)
+  const courseCount = await db.from('courses').select('id', { count: 'exact', head: true }).eq('user_id', userId)
+  if ((courseCount.count ?? 0) === 0) {
+    const now = new Date().toISOString()
+    for (const demo of DEMO_COURSES) {
+      await db.from('courses').insert({ user_id: userId, ...demo, last_updated: now })
+    }
+  }
+
+  // 3. Seed an SDE roadmap (only if the user has none)
+  const planCount = await db.from('roadmap_plans').select('id', { count: 'exact', head: true }).eq('user_id', userId)
+  if ((planCount.count ?? 0) === 0) {
+    const data = getRoadmap('SDE')
+    const planRes = await db.from('roadmap_plans')
+      .insert({ user_id: userId, weeks_json: data, version: 1 }).select('id').single()
+    if (planRes.data) {
+      const tasks: Record<string, unknown>[] = []
+      for (const week of data.weeks) {
+        for (const task of week.tasks) {
+          tasks.push({
+            plan_id: planRes.data.id, user_id: userId, week_number: week.week,
+            title: task.title, type: task.type ?? 'general',
+            resource_link: task.resource_link, estimated_hours: task.estimated_hours ?? 1,
+            // Mark the first two weeks complete so progress looks real
+            status: week.week <= 2 ? 'completed' : 'pending',
+          })
+        }
+      }
+      for (let i = 0; i < tasks.length; i += 50) await db.from('roadmap_tasks').insert(tasks.slice(i, i + 50))
+    }
+  }
+
+  // 4. Mark a batch of DSA problems solved (only if problems are seeded in the DB)
+  const problems = (await db.from('dsa_problems').select('id').limit(48)).data ?? []
+  if (problems.length) {
+    const rows = problems.map((p) => ({ user_id: userId, problem_id: p.id, status: 'solved' }))
+    await db.from('dsa_progress').upsert(rows, { onConflict: 'user_id,problem_id' })
+  }
+
+  // 5. Compute the readiness score so the dashboard tile is populated
+  try { await calculateScore(db, userId) } catch { /* non-fatal */ }
+
+  return ok({ seeded: true })
 }
 
 // ═══ Roadmap + Compass ════════════════════════════════════════════════════════

@@ -12,7 +12,8 @@ import { NextResponse } from 'next/server'
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Accept either env-var name so we don't depend on which one is set in Vercel.
+const SERVICE = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY)!
 
 /** Service-role client — full DB access, no user session. */
 export function admin(): SupabaseClient {

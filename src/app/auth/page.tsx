@@ -49,6 +49,16 @@ function AuthInner() {
     setLoading(false)
   }
 
+  // Populate a fresh guest account with realistic demo data (best-effort).
+  async function seedDemoData(accessToken: string) {
+    try {
+      await fetch('/api/backend/demo/seed', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+    } catch { /* non-fatal — dashboard still loads */ }
+  }
+
   async function handleGuestAuth() {
     setLoading(true)
     setError('')
@@ -57,7 +67,8 @@ function AuthInner() {
     try {
       const { data, error } = await supabase.auth.signInAnonymously()
       if (!error && data.session) {
-        window.location.href = '/onboarding'
+        await seedDemoData(data.session.access_token)
+        window.location.href = '/dashboard'
         return
       }
     } catch { /* anonymous auth disabled — fall through */ }
@@ -70,6 +81,7 @@ function AuthInner() {
     if (demoErr) {
       setError('Guest access unavailable. Please create a free account — it only takes 30 seconds!')
     } else if (data.session) {
+      await seedDemoData(data.session.access_token)
       window.location.href = '/dashboard'
     }
     setLoading(false)
