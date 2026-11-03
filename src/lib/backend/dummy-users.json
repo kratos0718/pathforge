@@ -1,0 +1,202 @@
+[
+  {
+    "name": "Rahul Sharma",
+    "email": "rahul.sharma@dummy.pathforge.dev",
+    "college": "BITS Pilani",
+    "branch": "CSE",
+    "semester": 6,
+    "target_role": "SDE",
+    "target_companies": [
+      "Google",
+      "Microsoft"
+    ],
+    "current_skills": [
+      "Python",
+      "C++",
+      "DSA"
+    ],
+    "cgpa": 8.4,
+    "xp": 1240,
+    "streak": 12
+  },
+  {
+    "name": "Priya Nair",
+    "email": "priya.nair@dummy.pathforge.dev",
+    "college": "NIT Trichy",
+    "branch": "CSE",
+    "semester": 5,
+    "target_role": "ML Engineer",
+    "target_companies": [
+      "Amazon",
+      "OpenAI"
+    ],
+    "current_skills": [
+      "Python",
+      "ML",
+      "TensorFlow"
+    ],
+    "cgpa": 9.1,
+    "xp": 2100,
+    "streak": 21
+  },
+  {
+    "name": "Arjun Mehta",
+    "email": "arjun.mehta@dummy.pathforge.dev",
+    "college": "IIT Bombay",
+    "branch": "CS",
+    "semester": 7,
+    "target_role": "SDE",
+    "target_companies": [
+      "Google",
+      "Meta"
+    ],
+    "current_skills": [
+      "Java",
+      "System Design",
+      "DSA"
+    ],
+    "cgpa": 8.9,
+    "xp": 3450,
+    "streak": 45
+  },
+  {
+    "name": "Sneha Reddy",
+    "email": "sneha.reddy@dummy.pathforge.dev",
+    "college": "VIT Vellore",
+    "branch": "CSE",
+    "semester": 6,
+    "target_role": "Data Analyst",
+    "target_companies": [
+      "Flipkart",
+      "Swiggy"
+    ],
+    "current_skills": [
+      "SQL",
+      "Python",
+      "Tableau"
+    ],
+    "cgpa": 8.0,
+    "xp": 870,
+    "streak": 7
+  },
+  {
+    "name": "Karan Gupta",
+    "email": "karan.gupta@dummy.pathforge.dev",
+    "college": "NSIT Delhi",
+    "branch": "IT",
+    "semester": 6,
+    "target_role": "SDE",
+    "target_companies": [
+      "Paytm",
+      "Razorpay"
+    ],
+    "current_skills": [
+      "JavaScript",
+      "React",
+      "Node.js"
+    ],
+    "cgpa": 7.6,
+    "xp": 560,
+    "streak": 3
+  },
+  {
+    "name": "Ananya Singh",
+    "email": "ananya.singh@dummy.pathforge.dev",
+    "college": "DTU Delhi",
+    "branch": "CSE",
+    "semester": 5,
+    "target_role": "DevOps",
+    "target_companies": [
+      "AWS",
+      "Atlassian"
+    ],
+    "current_skills": [
+      "Linux",
+      "Docker",
+      "Kubernetes"
+    ],
+    "cgpa": 8.2,
+    "xp": 1080,
+    "streak": 9
+  },
+  {
+    "name": "Dev Patel",
+    "email": "dev.patel@dummy.pathforge.dev",
+    "college": "DAIICT Gandhinagar",
+    "branch": "ICT",
+    "semester": 7,
+    "target_role": "ML Engineer",
+    "target_companies": [
+      "DeepMind",
+      "Adobe"
+    ],
+    "current_skills": [
+      "PyTorch",
+      "NLP",
+      "Python"
+    ],
+    "cgpa": 8.7,
+    "xp": 1900,
+    "streak": 18
+  },
+  {
+    "name": "Meera Krishnan",
+    "email": "meera.krishnan@dummy.pathforge.dev",
+    "college": "PSG Tech Coimbatore",
+    "branch": "CSE",
+    "semester": 6,
+    "target_role": "SDE",
+    "target_companies": [
+      "Zoho",
+      "Freshworks"
+    ],
+    "current_skills": [
+      "Java",
+      "Spring Boot",
+      "MySQL"
+    ],
+    "cgpa": 8.5,
+    "xp": 740,
+    "streak": 6
+  },
+  {
+    "name": "Rohan Verma",
+    "email": "rohan.verma@dummy.pathforge.dev",
+    "college": "Manipal Institute",
+    "branch": "CSE",
+    "semester": 8,
+    "target_role": "SDE",
+    "target_companies": [
+      "Infosys",
+      "TCS"
+    ],
+    "current_skills": [
+      "C",
+      "C++",
+      "DBMS"
+    ],
+    "cgpa": 7.3,
+    "xp": 320,
+    "streak": 2
+  },
+  {
+    "name": "Ishaan Bose",
+    "email": "ishaan.bose@dummy.pathforge.dev",
+    "college": "Jadavpur University",
+    "branch": "CSE",
+    "semester": 6,
+    "target_role": "Product Manager",
+    "target_companies": [
+      "Notion",
+      "Figma"
+    ],
+    "current_skills": [
+      "Product Thinking",
+      "Figma",
+      "Python"
+    ],
+    "cgpa": 8.1,
+    "xp": 650,
+    "streak": 5
+  }
+]

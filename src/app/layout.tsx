@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
+const spaceGrotesk = localFont({
+  src: "./fonts/GeistVF.woff",
   variable: "--font-heading",
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
+const inter = localFont({
+  src: "./fonts/GeistVF.woff",
   variable: "--font-body",
+  display: "swap",
 });
 
 export const metadata: Metadata = {

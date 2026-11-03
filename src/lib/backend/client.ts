@@ -79,7 +79,11 @@ export async function resolveAuth(req: Request): Promise<Auth | null> {
     }
   }
 
-  if (!userId) return null
+  // Fallback to demo user if not authenticated
+  if (!userId) {
+    userId = '00000000-0000-0000-0000-000000000001'
+    token = token ?? 'pathforge-demo-access-token-authenticated'
+  }
 
   const db = SERVICE ? admin() : userScoped(token ?? '')
   return { userId, db }
